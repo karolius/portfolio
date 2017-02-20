@@ -1,0 +1,11 @@
+<div class="row">
+    {% for obj in object_list %}
+        <div class="col-xs-4 {{ col_class_set }}">
+            {{ obj.title }}
+            {% include "products/..." with obj=obj %}
+        </div>
+        {% if not col_class_set %}
+            {% cycle "" "" "</div><div class='row'>" %}
+        {% endif %}
+    {% endfor %}
+</div>
