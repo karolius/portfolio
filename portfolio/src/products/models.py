@@ -6,8 +6,18 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.db.models.signals import pre_save, post_save
+from django.urls import reverse
 from django.utils.text import slugify
 from django.core.files import File
+
+
+THUMB_CHOICES = (("hd", "HD"),
+                 ("sd", "SD"),
+                 ("micro", "Micro"),)
+
+THUMB_SIZE = ((800, 800),
+              (350, 350),
+              (150, 150))
 
 
 def download_media_location(instance, filename):
@@ -28,6 +38,28 @@ class Product(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse('products:detail_slug', kwargs={'slug': self.slug})
+
+    def get_image_url(self, type=THUMB_CHOICES[-2][0]):
+        img = self.thumbnail_set.filter(type=type).first()
+        if img:
+            return img.media.url
+        return None
+
+    def get_price(self):
+        if self.sale_active and self.sale_price:
+            return self.sale_price
+        return self.price
+
+    def get_html_price(self):
+        price = self.get_price()
+        if price == self.sale_price:
+            return "<p><span>%s   </span><small><span style='color:red;" \
+                   "text-decoration: line-through;'>%s</span></p></small>"\
+                   % (self.sale_price, self.price)
+        return "<p>%s</p>" % self.price
 
 
 def create_slug(instance, new_slug=None):
@@ -51,22 +83,13 @@ def product_pre_save_receiver(sender, instance, *args, **kwargs):
 pre_save.connect(product_pre_save_receiver, sender=Product)
 
 
-THUMB_CHOICES = (("hd", "HD"),
-                 ("sd", "SD"),
-                 ("micro", "Micro"),)
-
-THUMB_SIZE = ((500, 500),
-              (350, 350),
-              (150, 150))
-
-
 def thumbnail_location(instance, filename):
     return "%s/%s" % (instance.product.slug, filename)
 
 
 class Thumbnail(models.Model):
     product = models.ForeignKey(Product)
-    type = models.CharField(max_length=12, choices=THUMB_CHOICES, default='hd')
+    type = models.CharField(max_length=12, choices=THUMB_CHOICES)
     height = models.CharField(max_length=10, null=True, blank=True)
     width = models.CharField(max_length=10, null=True, blank=True)
     media = models.ImageField(width_field="width", height_field="height",
@@ -97,20 +120,18 @@ def create_new_thumb(media_path, instance, owner_slug, size):
     thumb_data = open(temp_file_path, "rb")
 
     thumb_file = File(thumb_data)
-    print("OTO filename ", filename)
-    print("OTO thumb_file ", thumb_file)
     instance.media.save(filename, thumb_file)
     shutil.rmtree(temp_loc, ignore_errors=True)
 
 
-# TODO check if images already exists (duplicates)
+# TODO check if images already exists (duplicates), and remove from files when deleted
 def product_post_save_receiver(sender, instance, *args, **kwargs):
     if instance.media:
         media_path = instance.media.path
         owner_slug = instance.slug
         for i in range(len(THUMB_SIZE)):
             thumb, thumb_created = Thumbnail.objects.get_or_create(product=instance,
-                                                                   type=THUMB_CHOICES[i])
+                                                                   type=THUMB_CHOICES[i][0])
             if thumb_created:
                 create_new_thumb(media_path, thumb, owner_slug, THUMB_SIZE[i])
 

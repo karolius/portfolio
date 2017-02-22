@@ -1,0 +1,11 @@
+<div class="thumbnail text-center">
+    <h3><a href="{{ obj.get_absolute_url }}">{{ obj.title }}</a></h3>
+    {% if obj.get_image_url %}
+        <a href="{{ obj.get_absolute_url }}">
+            <img id="img" class="img-responsive" src="{{ obj.get_image_url }}" /><br />
+            {% if price == "True" %}
+                {{ obj.get_html_price|safe }}
+            {% endif %}
+        </a>
+    {% endif %}
+</div>
