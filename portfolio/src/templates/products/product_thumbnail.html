@@ -4,7 +4,7 @@
         <a href="{{ obj.get_absolute_url }}">
             <img id="img" class="img-responsive" src="{{ obj.get_image_url }}" /><br />
             {% if price == "True" %}
-                {{ obj.get_html_price|safe }}
+                {{ obj.variation_set.first.get_html_price }}
             {% endif %}
         </a>
     {% endif %}

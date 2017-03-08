@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-4 col-sm-offset-4 text-center">
+            <p class="lead">Create new product:</p>
+            <form method="POST" action="" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <input class='btn btn-block btn-primary' type="submit"
+                       value="{% if submit_btn %}{{ submit_btn }}
+                                      {% else %}Submit{% endif %}" />
+            </form>
+        </div>
+    </div>
+{% endblock %}

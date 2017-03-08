@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # thir part apps
+    # third part apps
     'crispy_forms',
     'registration',
     # my apps
@@ -133,3 +133,5 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, "static_in_pro", "our_static"),)
 
 MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), "static_in_env", "media")
 PROTECTED_ROOT = os.path.join(os.path.dirname(BASE_DIR), "static_in_env", "protected")
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'

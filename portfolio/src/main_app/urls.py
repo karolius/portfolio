@@ -12,6 +12,7 @@ urlpatterns = [
 
     url(r'^$', test, name='home'),
     url(r'^products/', include("products.urls", namespace="products")),
+    url(r'^categories/', include("products.urls_categories", namespace="categories")),
 ]
 
 

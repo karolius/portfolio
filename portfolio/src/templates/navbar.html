@@ -17,27 +17,33 @@
             <ul class="nav navbar-nav">
                 <li><a href="{% url 'products:list' %}">Home</a></li>
                 <li><a href="{% url 'products:list' %}">Products</a></li>
-                <li><a href="{% url 'products:list' %}">Categories</a></li>
-{#                <form class="navbar-form navbar-left" role="search" method="GET" action="{% url 'product_list' %}">#}
-{#                    <div class="form-group">#}
-{#                        <input type="text" class="form-control" placeholder="Search" name="q" {% if query %}value="{{ request.GET.q }}"{% endif %}>#}
-{#                    </div>#}
-{#                    <button class="btn btn-default" type="submit">Submit</button>#}
-{#                </form>#}
+                <li><a href="{% url 'categories:list' %}">Categories</a></li>
+                {#                <form class="navbar-form navbar-left" role="search" method="GET" action="{% url 'product_list' %}">#}
+                {#                    <div class="form-group">#}
+                {#                        <input type="text" class="form-control" placeholder="Search" name="q" {% if query %}value="{{ request.GET.q }}"{% endif %}>#}
+                {#                    </div>#}
+                {#                    <button class="btn btn-default" type="submit">Submit</button>#}
+                {#                </form>#}
             </ul>
             <ul class="nav navbar-nav navbar-right">
-{#            <li>#}
-{#                <a href="{% url 'products:list' %}">#}
-{#                    <span id="cart-count-badge" class="badge">{{ request.session.cart_item_count }}</span>#}
-{#                    <i class="fa fa-shopping-cart fa-navbar-cart"></i>#}
-{#                </a>#}
-{#            </li>#}
+                {#            <li>#}
+                {#                <a href="{% url 'products:list' %}">#}
+                {#                    <span id="cart-count-badge" class="badge">{{ request.session.cart_item_count }}</span>#}
+                {#                    <i class="fa fa-shopping-cart fa-navbar-cart"></i>#}
+                {#                </a>#}
+                {#            </li>#}
+                <li>
+                    <a href="#"> {# {% url 'cart'%}#}
+                        <i class="fa fa-shopping-basket fa-navbar-basket"></i>
+                    </a>
+                </li>
                 {% if request.user.is_authenticated %}
                     <li><a href="{% url 'auth_logout' %}">Logout</a></li>
                 {% else %}
-                    <li><a href="{% url 'registration_register' %}">Register</a></li>
+                    <li>
+                        <a href="{% url 'registration_register' %}">Register</a>
+                    </li>
                     {% if not request.user.is_authenticated and not "/accounts/login" in request.get_full_path %}
-
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                                role="button" aria-expanded="false">
