@@ -11,6 +11,8 @@ from .forms import ProductModelForm, VariationInventoryFormSet
 from .mixins import ProductIdMixin
 from .models import Product, Variation, Category
 
+from django.contrib import messages
+
 
 class ProductListView(ListView):
     model = Product
@@ -44,6 +46,12 @@ class ProductCreateView(ProductIdMixin, CreateView):
 class ProductUpdateView(ProductIdMixin, UpdateView):
     model = Product
     form_class = ProductModelForm
+
+    def form_valid(self, form):
+        valid_data = super(ProductUpdateView, self).form_valid(form)
+        message_text = "Product have been updated successfully."
+        messages.add_message(self.request, messages.INFO, message_text)
+        return valid_data
 
 
 class VariationListView(ListView):
@@ -79,7 +87,8 @@ class VariationListView(ListView):
                 if new_variation.title:
                     new_variation.product = product
                     new_variation.save()
-            # todo add info that variations are updated
+            message_text = "Product variations have been updated successfully."
+            messages.add_message(request, messages.INFO, message_text)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         raise Http404
 

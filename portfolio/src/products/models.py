@@ -141,11 +141,11 @@ class Variation(models.Model):
 
     def get_html_price(self):
         if self.sale_price is not None:
-            html_text = "<h4><span class='sale-price'>%s</span>" \
-                        " <small class='og-price'>%s</small></h4>" \
+            html_text = "<h3><span class='sale-price'>%s</span>" \
+                        " <small class='og-price'>%s</small></h3>" \
                         % (self.sale_price, self.price)
         else:
-            html_text = "<small class='price'>%s</small>" % self.price
+            html_text = "<h3 class='price'>%s</h3>" % self.price
 
         return mark_safe(html_text)
 
