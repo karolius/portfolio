@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+
+<script>
+    {% block jquery %}
+        $(".position-qty").change(function () {
+            var position = $(this).prev("input[type='hidden]").val();
+            var qty = $(this).val();
+            var data = {
+                position: position,
+                qty: qty
+            };
+            console.log(data);
+
+            $.ajax({
+                type: "GET",
+                url: "{% url 'cart' %}",
+                data: data,
+
+                success: function (data) {
+{#               TODO odkomentuje, dopisz funckje i znajdz alert     $(#jqery) #}
+                }
+            })
+        });
+    {% endblock %}
+</script>
+
+
+{% block content %}
+    <div class="col-sm-8 col-sm-offset-2">
+        <p class="lead">Teststt</p>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Products price</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for position in object.cartposition_set.all %}
+                <tr>
+                    <td>{{ position }}</td>
+                    <td>{{ position.item.get_price }}</td>
+                    <td>
+                    <form method="GET" action=".">
+                        <input type="hidden" name="item" value="{{ position.item.id }}">
+                        <input class="position-qty" type="number" name="qantity"
+                               value="{{ position.quantity }}" title="quantity" width="4">
+                        <input id="update-quantity-btn" type="submit" style="display: none;"
+                               class="btn-update-qty btn btn-link" value="Update Item">
+                    </form>
+                    </td>
+                    <td>{{ position.items_total_price }}</td>
+                    <td><a href="{{ position.remove }}">X</a></td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -4,11 +4,15 @@ from django.conf.urls.static import static
 from django.contrib import admin
 
 from .views import test
+from carts.views import CartView, ItemCoutView
 
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/', include('registration.backends.default.urls')),
+
+    url(r'^cart/$', CartView.as_view(), name='cart'),
+    url(r'^cart/count/$', ItemCoutView.as_view(), name='item_count'),
 
     url(r'^$', test, name='home'),
     url(r'^products/', include("products.urls", namespace="products")),

@@ -26,17 +26,19 @@
                 {#                </form>#}
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                {#            <li>#}
-                {#                <a href="{% url 'products:list' %}">#}
-                {#                    <span id="cart-count-badge" class="badge">{{ request.session.cart_item_count }}</span>#}
-                {#                    <i class="fa fa-shopping-cart fa-navbar-cart"></i>#}
-                {#                </a>#}
-                {#            </li>#}
                 <li>
-                    <a href="#"> {# {% url 'cart'%}#}
+                    <a href="{% url 'cart' %}">
+                        <span id="cart-count-badge" class="badge">
+                            {{ request.session.cart_item_count }}
+                        </span>
                         <i class="fa fa-shopping-basket fa-navbar-basket"></i>
+                        <span id="cart-sum-price-badge" class="badge">
+                            {{ request.session.cart_sum_price }} €
+                        </span>
                     </a>
                 </li>
+
+
                 {% if request.user.is_authenticated %}
                     <li><a href="{% url 'auth_logout' %}">Logout</a></li>
                 {% else %}

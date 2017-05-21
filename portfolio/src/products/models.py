@@ -57,7 +57,7 @@ class Product(models.Model):
     sale_price = models.DecimalField(max_digits=25, decimal_places=2,
                                      null=True, blank=True)
     sale_active = models.BooleanField(default=False)
-    media = models.ImageField(upload_to=download_media_location,
+    media = models.ImageField(upload_to=download_media_location,  # TODO some weird migrations has place here ...
                               null=True, blank=True,
                               storage=FileSystemStorage(location=settings.PROTECTED_ROOT))
     category = models.ManyToManyField("Category", blank=True)
@@ -123,16 +123,16 @@ def create_new_thumb(media_path, instance, owner_slug, size):
 
 
 class Variation(models.Model):
+    product = models.ForeignKey(Product)
     title = models.CharField(max_length=120)
     sub_description = models.CharField(max_length=360, null=True, blank=True)
     price = models.DecimalField(max_digits=25, decimal_places=2)
     sale_price = models.DecimalField(max_digits=25, decimal_places=2,
                                      null=True, blank=True)
     sale_active = models.BooleanField(default=False)
-    product = models.ForeignKey(Product)
 
     def __str__(self):
-        return self.title
+        return "%s: %s" % (self.product.title, self.title)
 
     def get_price(self):
         if self.sale_price is not None:

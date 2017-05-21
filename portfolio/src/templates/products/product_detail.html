@@ -22,18 +22,56 @@
             }
         }
 
+
         setPrice();
         $(".variation-select").change(function () {
-           setPrice();
+            setPrice();
+        });
+
+        function showFlashPrompt(message) {
+            var template = "{% include 'alert.html' with message='" + message +"' %}";
+
+            $("body").append(template);
+            $(".container-alert-flash-prompt").fadeIn;
+            console.log("DUDUD");
+            setTimeout(function () {
+                console.log("Poszlo");
+                $(".container-alert-flash-prompt").fadeOut;
+            }, 1250);
+        }
+
+
+
+
+
+        {# Ajax add to cart #}
+        $("#add-variation-submit-btn").click(function (event) {
+            event.preventDefault();
+            var formData = $("#add-to-cart-form").serialize();
+
+            $.ajax({
+                type: "GET",
+                url: "{% url 'cart' %}",
+                data: formData,
+
+                success: function (data) {
+                    showFlashPrompt(data.flash_message);
+
+                    updateCartItemCount();
+                    console.log("DUDUSPASPAPA");
+                },
+                error: function (data) {
+                    showFlashPrompt(data.flash_message);
+                }
+            })
         });
     {% endblock %}
 </script>
-{#  #}
+
 
 {% block content %}
     <div class="col-sm-8">
         <h3>{{ object.title }}</h3>
-
         {% if hd_image %}
             <img id="img" class="img-responsive" src="{{ hd_image }}" /><br />
             {% if price == "True" %}
@@ -43,35 +81,42 @@
         <hr />
         <p class="lead">{{ object.description }}</p>
     </div>
+
+
     <div class="col-sm-4">
-        {% if object.variation_set.count > 1 %}
-            <h3 class="text-left" id="price" >
-                {{ object.variation_set.first.price }}
-            </h3>
-            <select name="item" class="form-control variation-select">
-                {% for variation in object.variation_set.all %}
-                    <option data-sale-price="{{ variation.sale_price }}"
-                            data-price="{{ variation.price }}"
-                            data-description="{{ variation.sub_description }}"
-                            value="{{ variation.id }}">
-                        {{ variation }}
-                    </option>
-                {% endfor %}
-            </select>
-            <p id="description">
-                {{ object.variation_set.first.sub_description }}
-            </p>
-        {% else %}
-            <input type="hidden" name="item" value="{{ object.variation_set.first.id }}">
-            <h3 class="text-left">
-                {% if object.variation_set.first.sale_price %}
-                    {{ object.variation_set.first.sale_price }}
-                    <small class="og-price">{{ object.variation_set.first.price }}</small>
-                {% else %}
+        <form id="add-to-cart-form" method="GET" action="{% url 'cart' %}">
+            {% if object.variation_set.count > 1 %}
+                <h3 class="text-left" id="price" >
                     {{ object.variation_set.first.price }}
-                {% endif %}
-            </h3>
-        {% endif %}
+                </h3>
+                <select name="item" class="form-control variation-select" title="variations-list">
+                    {% for variation in object.variation_set.all %}
+                        <option data-sale-price="{{ variation.sale_price }}"
+                                data-price="{{ variation.price }}"
+                                data-description="{{ variation.sub_description }}"
+                                value="{{ variation.id }}">
+                            {{ variation.title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                <input type="hidden" name="item" value="{{ object.variation_set.first.id }}">
+                <h3 class="text-left">
+                    {% if object.variation_set.first.sale_price %}
+                        {{ object.variation_set.first.sale_price }}
+                        <small class="og-price">{{ object.variation_set.first.price }}</small>
+                    {% else %}
+                        {{ object.variation_set.first.price }}
+                    {% endif %}
+                </h3>
+            {% endif %}
+            <input class="form-control" type="number" name="qantity" value="1" title="quantity">
+            <br/>
+            <input id="add-variation-submit-btn" type="submit" class="btn btn-default" value="Add to Cart">
+        </form>
+        <p id="description">
+            {{ object.variation_set.first.sub_description }}
+        </p>
         <hr />
 
         {# Partialy only for saler, view for all #}
