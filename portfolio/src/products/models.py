@@ -1,5 +1,6 @@
 import os
 import shutil
+import string
 import random
 import uuid
 from PIL import Image
@@ -168,8 +169,7 @@ def product_post_save_receiver(sender, instance, *args, **kwargs):
         media_path = instance.media.path
         owner_id = instance.id
         for i in range(len(THUMB_SIZE)):
-            thumb, thumb_created = Thumbnail.objects.get_or_create(product=instance,
-                                                                   type=THUMB_CHOICES[i][0])
+            thumb, thumb_created = Thumbnail.objects.get_or_create(product=instance, type=THUMB_CHOICES[i][0])
             if thumb_created:
                 create_new_thumb(media_path, thumb, owner_id, THUMB_SIZE[i])
 
@@ -192,9 +192,17 @@ class Category(models.Model):
         return reverse("categories:detail", kwargs={"slug": self.slug})
 
 
-def category_post_save_receiver(sender, instance, *args, **kwargs):
+def category_pre_save_receiver(sender, instance, *args, **kwargs):
+    # Add slug if user didnt type any. If slug based on title exists, then generate random.
     if not instance.slug:
-        instance.slug = slugify(instance.title)
+        new_slug = slugify(instance.title)
+        while True:
+            slug_exist = Category.objects.filter(slug=new_slug).exists()
+            if not slug_exist:
+                break
+            new_slug = "%s-%s" % (new_slug, random.choice(string.ascii_lowercase))
+        instance.slug = new_slug
+        instance.save()
 
 
-post_save.connect(category_post_save_receiver, sender=Category)
+pre_save.connect(category_pre_save_receiver, sender=Category)

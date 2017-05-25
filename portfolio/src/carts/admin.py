@@ -1,10 +1,10 @@
 from django.contrib import admin
-from .models import (CartPosition,
+from .models import (CartItem,
                      Cart)
 
 
-class CartPositionInLine(admin.TabularInline):
-    model = CartPosition
+class CartItemInLine(admin.TabularInline):
+    model = CartItem
 
 
 class CartAdmin(admin.ModelAdmin):
@@ -12,7 +12,7 @@ class CartAdmin(admin.ModelAdmin):
     list_display_links = ["__str__", "user"]
     list_filter = ["user"]
     search_fields = ["user"]
-    inlines = [CartPositionInLine]
+    inlines = [CartItemInLine]
 
     class Meta:
         model = Cart

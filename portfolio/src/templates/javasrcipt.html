@@ -8,7 +8,7 @@
 
 
 <script>
-    function updateCartItemCount() {
+    function updateCartPositionCount() {
         var badge_items_count = $("#cart-count-badge");
         var badge_sum_price = $("#cart-sum-price-badge");
         $.ajax({
@@ -27,6 +27,6 @@
 
 
     $(document).ready(function () {
-        updateCartItemCount();
+        updateCartPositionCount();
     });
 </script>

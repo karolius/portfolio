@@ -6,36 +6,36 @@ from django.db.models.signals import pre_save, post_save, post_delete
 from products.models import Variation, Product
 
 
-class CartPosition(models.Model):
+class CartItem(models.Model):
     cart = models.ForeignKey("Cart")
-    item = models.ForeignKey(Variation)
+    variation = models.ForeignKey(Variation)
     quantity = models.IntegerField(default=1)
     items_total_price = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
 
     def __str__(self):
-        return str(self.item)
+        return str(self.variation)
 
 
-def cart_position_pre_action_receiver(sender, instance, *args, **kwargs):
+def cartitem_pre_action_receiver(sender, instance, *args, **kwargs):
     qty = instance.quantity
     if qty >= 1:
-        price = Decimal(instance.item.get_price())
+        price = Decimal(instance.variation.get_price())
         instance.items_total_price = price * qty
 
-pre_save.connect(cart_position_pre_action_receiver, sender=CartPosition)
+pre_save.connect(cartitem_pre_action_receiver, sender=CartItem)
 
 
-def cart_position_post_action_receiver(sender, instance, *args, **kwargs):
+def cartitem_post_action_receiver(sender, instance, *args, **kwargs):
     instance.cart.update_subtotal()
 
 
-post_save.connect(cart_position_post_action_receiver, sender=CartPosition)
-post_delete.connect(cart_position_post_action_receiver, sender=CartPosition)
+post_save.connect(cartitem_post_action_receiver, sender=CartItem)
+post_delete.connect(cartitem_post_action_receiver, sender=CartItem)
 
 
 class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
-    items = models.ManyToManyField(Variation, through=CartPosition)
+    items = models.ManyToManyField(Variation, through=CartItem)
     # timestamp = models.DateTimeField(auto_now_add=True, auto_now=False)
     # updated = models.DateTimeField(auto_now_add=False, auto_now=True)
     subtotal = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
@@ -48,8 +48,8 @@ class Cart(models.Model):
 
     def update_subtotal(self):
         subtotal = 0
-        for cart_position in self.cartposition_set.all():
-            subtotal += cart_position.items_total_price
+        for cartitem in self.cartitem_set.all():
+            subtotal += cartitem.items_total_price
         self.subtotal = "{0:.2f}".format(subtotal)
         self.save()
 

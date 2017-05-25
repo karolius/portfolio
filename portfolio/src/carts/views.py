@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic.base import View
 
 from products.models import Variation
-from .models import Cart, CartPosition
+from .models import Cart, CartItem
 
 # TODO dodaj (nowa funkcja) zlicanie sumy cen produktow tak jak z koszykiem i iloscia jest
 # ... jeszcze nie ale bedzie
@@ -19,7 +19,6 @@ class ItemCoutView(View):
                 cart = Cart.objects.get(id=cart_id)
                 cart_item_count = cart.items.count()
                 cart_sum_price = str(cart.total_price)
-                print("total_price", cart_sum_price)
 
             # set count, then it wont flip
             request.session["cart_item_count"] = cart_item_count
@@ -52,77 +51,76 @@ class CartView(View):
 
     def get(self, request, *args, **kwargs):
         cart = self.get_object()
-        item_id = request.GET.get("item")
-        delete_item = request.GET.get("delete", False)
-        item_added = False
+        # TODO cos sie sypie item_id
+        item_id = request.GET.get("item_id")
+        delete_cart_item = request.GET.get("delete", False)
+        cart_item_added = False
         flash_message = ""
 
         if item_id:
-            item_instance = get_object_or_404(Variation, id=item_id)
+            cart_item_instance = get_object_or_404(Variation, id=item_id)
             qantity = int(request.GET.get("qantity", 1))
 
             try:
                 if qantity < 1:
-                    delete_item = True
+                    delete_cart_item = True
             except:
                 raise Http404
 
-            cart_position, cart_created = CartPosition.objects.get_or_create(cart=cart, item=item_instance)
+            cart_item, cart_created = CartItem.objects.get_or_create(cart=cart, item=cart_item_instance)
 
             if cart_created:
                 flash_message = "Item succesfully added to the card."
-                item_added = True
+                cart_item_added = True
 
-            if delete_item:
+            if delete_cart_item:
                 flash_message = "Item removed succesfully."
-                cart_position.delete()
+                cart_item.delete()
             else:
                 if not cart_created:
                     flash_message = "Item has been succesfully updated."
-                cart_position.quantity = qantity
-                print(qantity)
-                cart_position.save()
+                cart_item.quantity = qantity
+                cart_item.save()
 
             if not request.is_ajax():
                 return HttpResponseRedirect(reverse("cart"))
 
         if request.is_ajax():
             try:
-                items_total_price = cart_position.items_total_price
+                cart_item_total_price = cart_item.items_total_price
             except:
-                items_total_price = None
+                cart_item_total_price = None
 
             try:
-                subtotal = cart_position.cart.subtotal
+                subtotal = cart_item.cart.subtotal
             except:
                 subtotal = None
 
             try:
-                total_items = cart_position.cart.items.count()
+                total_items = cart_item.cart.items.count()
             except:
                 total_items = 0
 
             try:
-                tax_total = cart_position.cart.tax_total
+                tax_total = cart_item.cart.tax_total
             except:
                 tax_total = None
 
             try:
-                total_price = cart_position.cart.total_price
+                total_price = cart_item.cart.total_price
             except:
                 total_price = None
 
             data = {
-                "deleted": delete_item,
+                "deleted": delete_cart_item,
                 "flash_message": flash_message,
-                "item_added": item_added,
-                "items_total_price": items_total_price,
+                "cart_item_added": cart_item_added,
+                "cart_item_total_price": cart_item_total_price,
                 "subtotal": subtotal,
                 "total_items": total_items,
                 "tax_total": tax_total,
                 "total_price": total_price,
             }
-            print("OT O DODAOAD: ", data)
             return JsonResponse(data)
 
         context = {"object": cart}

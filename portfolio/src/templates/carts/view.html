@@ -4,11 +4,11 @@
 <script>
     {% block jquery %}
         $(".position-qty").change(function () {
-            var position = $(this).prev("input[type='hidden]").val();
-            var qty = $(this).val();
+            var item_id = $(this).prev("input[type='hidden']").val();
+            var qantity = $(this).val();
             var data = {
-                position: position,
-                qty: qty
+                item_id: item_id,
+                qantity: qantity
             };
             console.log(data);
 
@@ -18,7 +18,11 @@
                 data: data,
 
                 success: function (data) {
-{#               TODO odkomentuje, dopisz funckje i znajdz alert     $(#jqery) #}
+                    if (data.deleted){
+                        $("#position-"+item_id).fadeOut();
+                    } else {
+                        $("#positions-total-price-"+item_id).text(data.cart_item_total_price)
+                    }
                 }
             })
         });
@@ -45,16 +49,17 @@
                     <td>{{ position.item.get_price }}</td>
                     <td>
                     <form method="GET" action=".">
-                        <input type="hidden" name="item" value="{{ position.item.id }}">
+                        <input type="hidden" name="position" value="{{ position.item.id }}">
                         <input class="position-qty" type="number" name="qantity"
                                value="{{ position.quantity }}" title="quantity" width="4">
                         <input id="update-quantity-btn" type="submit" style="display: none;"
                                class="btn-update-qty btn btn-link" value="Update Item">
                     </form>
                     </td>
-                    <td>{{ position.items_total_price }}</td>
+                    <td id="positions-total-price-{{ position.item.id }}">{{ position.items_total_price }}</td>
                     <td><a href="{{ position.remove }}">X</a></td>
                 </tr>
+
             {% endfor %}
 
             </tbody>
