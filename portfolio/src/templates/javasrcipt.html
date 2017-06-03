@@ -5,10 +5,10 @@
 <script src="{% static 'js/bootstrap.min.js' %}"></script>
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 <script src="{% static 'js/ie10-viewport-bug-workaround.js' %}"></script>
-
+<script src="{% static 'js/custom.js' %}"></script>
 
 <script>
-    function updateCartPositionCount() {
+    function updateCartCount() {
         var badge_items_count = $("#cart-count-badge");
         var badge_sum_price = $("#cart-sum-price-badge");
         $.ajax({
@@ -27,6 +27,6 @@
 
 
     $(document).ready(function () {
-        updateCartPositionCount();
+        updateCartCount();
     });
 </script>

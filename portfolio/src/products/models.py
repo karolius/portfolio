@@ -153,6 +153,9 @@ class Variation(models.Model):
     def get_absolute_url(self):
         return self.product.get_absolute_url()
 
+    def remove_from_cart(self):
+        pass
+
 
 def product_post_save_receiver(sender, instance, *args, **kwargs):
     variations = instance.variation_set.all()

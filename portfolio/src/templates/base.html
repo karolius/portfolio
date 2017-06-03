@@ -8,24 +8,22 @@
     <title>{% block head_title %}Cult Store{% endblock %}</title>
     {% include "head_css.html" %}
     <style>
+
         body {
             min-height: 2000px;
         }
-
         .navbar-static-top {
             margin-bottom: 19px;
         }
-        {% block style %}
-            .container-alert-flash-prompt {
-                position: absolute;
-                top: 40px;
-                z-index: 50000;
-                width: 100%;
-                right: 0;
-                margin: 0;
-{#                display: none;#}
-            }
-        {% endblock %}
+        .container-alert-flash-prompt {
+            position: absolute;
+            top: 40px;
+            z-index: 50000;
+            width: 100%;
+            right: 0;
+            margin: 0;
+        }
+        {% block style %}{% endblock %}
     </style>
     {% include 'extra_head_info.html' %}
 </head>

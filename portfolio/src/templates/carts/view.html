@@ -3,11 +3,11 @@
 
 <script>
     {% block jquery %}
-        $(".position-qty").change(function () {
-            var item_id = $(this).prev("input[type='hidden']").val();
+        $(".cartitem-qty").change(function () {
+            var variation_id = $(this).prev("input[type='hidden']").val();
             var qantity = $(this).val();
             var data = {
-                item_id: item_id,
+                variation_id: variation_id,
                 qantity: qantity
             };
             console.log(data);
@@ -18,10 +18,16 @@
                 data: data,
 
                 success: function (data) {
+                    updateCartCount();
+                    showFlashPrompt(data.flash_message);
                     if (data.deleted){
-                        $("#position-"+item_id).fadeOut();
+                        $("#cartitem-"+variation_id).fadeOut();
                     } else {
-                        $("#positions-total-price-"+item_id).text(data.cart_item_total_price)
+                        $("#cartitem-total-price-"+variation_id).text(data.cart_item_total_price);
+                        $("#cartitem-total-items").text(data.total_items);
+                        $("#cartitem-subtotal").text(data.subtotal);
+                        $("#cartitem-tax-total").text(data.tax_total);
+                        $("#cartitem-total-price").text(data.total_price);
                     }
                 }
             })
@@ -31,8 +37,9 @@
 
 
 {% block content %}
-    <div class="col-sm-8 col-sm-offset-2">
-        <p class="lead">Teststt</p>
+    {% if object.cartitem_set.count > 0 %}
+        <div class="col-sm-8 col-sm-offset-2" id="cart-table">
+        <p class="lead">Your cart:</p>
         <table class="table">
             <thead>
             <tr>
@@ -43,26 +50,43 @@
             </tr>
             </thead>
             <tbody>
-            {% for position in object.cartposition_set.all %}
-                <tr>
-                    <td>{{ position }}</td>
-                    <td>{{ position.item.get_price }}</td>
+            {% for cartitem in object.cartitem_set.all %}
+                <tr id="cartitem-{{ cartitem.variation.id }}">
+                    <td>{{ cartitem }}</td>
+                    <td>{{ cartitem.variation.get_price }}</td>
                     <td>
-                    <form method="GET" action=".">
-                        <input type="hidden" name="position" value="{{ position.item.id }}">
-                        <input class="position-qty" type="number" name="qantity"
-                               value="{{ position.quantity }}" title="quantity" width="4">
-                        <input id="update-quantity-btn" type="submit" style="display: none;"
-                               class="btn-update-qty btn btn-link" value="Update Item">
-                    </form>
+                        <form method="GET" action=".">
+                            <input type="hidden" name="variation_id" value="{{ cartitem.variation.id }}">
+                            <input class="cartitem-qty" type="number" name="qantity"
+                                   value="{{ cartitem.quantity }}" title="quantity" width="4">
+                            <input id="update-quantity-btn" type="submit" style="display: none;"
+                                   class="btn-update-qty btn btn-link" value="Update Item">
+                        </form>
                     </td>
-                    <td id="positions-total-price-{{ position.item.id }}">{{ position.items_total_price }}</td>
-                    <td><a href="{{ position.remove }}">X</a></td>
+                    <td id="cartitem-total-price-{{ cartitem.variation.id }}">{{ cartitem.items_total_price }}</td>
+                    <td><a href="{{ cartitem.remove_from_cart }}">X</a></td>
                 </tr>
-
             {% endfor %}
-
+            <tr>
+                <td class="text-right" colspan="4">Total items: </td>
+                <td id="cartitem-total-items" class="text-right">{{ object.cartitem_set.count }}</td>
+            </tr>
+            <tr>
+                <td class="text-right" colspan="4">Subtotal: </td>
+                <td id="cartitem-subtotal" class="text-right">{{ object.subtotal }}</td>
+            </tr>
+            <tr>
+                <td class="text-right" colspan="4">Tax total: </td>
+                <td id="cartitem-tax-total" class="text-right">{{ object.tax_total }}</td>
+            </tr>
+            <tr>
+                <td class="text-right" colspan="4">Total price: </td>
+                <td id="cartitem-total-price" class="text-right">{{ object.total_price }}</td>
+            </tr>
             </tbody>
         </table>
     </div>
+    {% else %}
+        {% include 'carts/empty_cart.html' %}
+    {% endif %}
 {% endblock %}

@@ -6,12 +6,10 @@ from django.views.generic.base import View
 from products.models import Variation
 from .models import Cart, CartItem
 
-# TODO dodaj (nowa funkcja) zlicanie sumy cen produktow tak jak z koszykiem i iloscia jest
-# ... jeszcze nie ale bedzie
 
 class ItemCoutView(View):
     def get(self, request, *args, **kwargs):
-        if request.is_ajax():  # jeżeli ajax kolata to mu otworz :D
+        if request.is_ajax():
             cart_item_count = 0
             cart_sum_price = 0
             cart_id = self.request.session.get("cart_id")
@@ -28,9 +26,6 @@ class ItemCoutView(View):
         return Http404
 
 
-# TODO
-# cartview w url i podaj link do template:base template:product_detail
-# dodaj przycisk kupda
 class CartView(View):
     model = Cart
     template_name = "carts/view.html"
@@ -51,29 +46,22 @@ class CartView(View):
 
     def get(self, request, *args, **kwargs):
         cart = self.get_object()
-        # TODO cos sie sypie item_id
-        item_id = request.GET.get("item_id")
-        delete_cart_item = request.GET.get("delete", False)
+        variation_id = request.GET.get("variation_id")
+        delete_cartitem = request.GET.get("delete_cartitem", False)
         cart_item_added = False
         flash_message = ""
 
-        if item_id:
-            cart_item_instance = get_object_or_404(Variation, id=item_id)
+        if variation_id:
             qantity = int(request.GET.get("qantity", 1))
+            delete_cartitem = self.check_qty_or_raise404(delete_cartitem, qantity)
 
-            try:
-                if qantity < 1:
-                    delete_cart_item = True
-            except:
-                raise Http404
-
-            cart_item, cart_created = CartItem.objects.get_or_create(cart=cart, item=cart_item_instance)
-
+            variation = get_object_or_404(Variation, id=variation_id)
+            cart_item, cart_created = CartItem.objects.get_or_create(cart=cart, variation=variation)
             if cart_created:
                 flash_message = "Item succesfully added to the card."
                 cart_item_added = True
 
-            if delete_cart_item:
+            if delete_cartitem:
                 flash_message = "Item removed succesfully."
                 cart_item.delete()
             else:
@@ -86,43 +74,62 @@ class CartView(View):
                 return HttpResponseRedirect(reverse("cart"))
 
         if request.is_ajax():
-            try:
-                cart_item_total_price = cart_item.items_total_price
-            except:
-                cart_item_total_price = None
-
-            try:
-                subtotal = cart_item.cart.subtotal
-            except:
-                subtotal = None
-
-            try:
-                total_items = cart_item.cart.items.count()
-            except:
-                total_items = 0
-
-            try:
-                tax_total = cart_item.cart.tax_total
-            except:
-                tax_total = None
-
-            try:
-                total_price = cart_item.cart.total_price
-            except:
-                total_price = None
-
             data = {
-                "deleted": delete_cart_item,
+                "deleted": delete_cartitem,
                 "flash_message": flash_message,
                 "cart_item_added": cart_item_added,
-                "cart_item_total_price": cart_item_total_price,
-                "subtotal": subtotal,
-                "total_items": total_items,
-                "tax_total": tax_total,
-                "total_price": total_price,
+                "cart_item_total_price": self.get_cart_item_total_price_or_none(cart_item),
+                "subtotal": self.get_subtotal_or_none(cart_item),
+                "total_items": self.get_total_items(cart_item),
+                "tax_total": self.get_tax_total_or_none(cart_item),
+                "total_price": self.get_total_price_or_none(cart_item),
             }
             return JsonResponse(data)
 
         context = {"object": cart}
         template = self.template_name
         return render(request, template, context)
+
+    def check_qty_or_raise404(self, delete_cartitem, qantity):
+        try:
+            if qantity < 1:
+                delete_cartitem = True
+        except:
+            raise Http404
+        return delete_cartitem
+
+    def get_total_price_or_none(self, cart_item):
+        try:
+            total_price = cart_item.cart.total_price
+        except:
+            total_price = None
+        return total_price
+
+
+    def get_tax_total_or_none(self, cart_item):
+        try:
+            tax_total = cart_item.cart.tax_total
+        except:
+            tax_total = None
+        return tax_total
+
+    def get_total_items(self, cart_item):
+        try:
+            total_items = cart_item.cart.items.count()
+        except:
+            total_items = 0
+        return total_items
+
+    def get_subtotal_or_none(self, cart_item):
+        try:
+            subtotal = cart_item.cart.subtotal
+        except:
+            subtotal = None
+        return subtotal
+
+    def get_cart_item_total_price_or_none(self, cart_item):
+        try:
+            cart_item_total_price = cart_item.items_total_price
+        except:
+            cart_item_total_price = None
+        return cart_item_total_price

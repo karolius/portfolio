@@ -28,22 +28,9 @@
             setPrice();
         });
 
-        function showFlashPrompt(message) {
-            var template = "{% include 'alert.html' with message='" + message +"' %}";
-
-            $("body").append(template);
-            $(".container-alert-flash-prompt").fadeIn;
-            setTimeout(function () {
-                $(".container-alert-flash-prompt").fadeOut;
-            }, 1250);
-        }
-
-
-
-
 
         {# Ajax add to cart #}
-        $("#add-variation-submit-btn").click(function (event) {
+        $("#add-to-cart-btn").click(function (event) {
             event.preventDefault();
             var formData = $("#add-to-cart-form").serialize();
             console.log("DATA: "+formData);
@@ -52,10 +39,9 @@
                 url: "{% url 'cart' %}",
                 data: formData,
 
-
                 success: function (data) {
                     showFlashPrompt(data.flash_message);
-                    updateCartPositionCount();
+                    updateCartCount();
                 },
                 error: function (data) {
                     showFlashPrompt(data.flash_message);
@@ -82,12 +68,11 @@
 
     <div class="col-sm-4">
         <form id="add-to-cart-form" method="GET" action="{% url 'cart' %}">
-        duaaaa
             {% if object.variation_set.count > 1 %}
                 <h3 class="text-left" id="price" >
                     {{ object.variation_set.first.price }}
                 </h3>
-                <select name="positiontest" class="form-control variation-select" title="variations-list">
+                <select name="variation_id" class="form-control variation-select" title="variations-list">
                     {% for variation in object.variation_set.all %}
                         <option data-sale-price="{{ variation.sale_price }}"
                                 data-price="{{ variation.price }}"
@@ -98,7 +83,7 @@
                     {% endfor %}
                 </select>
             {% else %}
-                <input type="hidden" name="positiondup" value="{{ object.variation_set.first.id }}">
+                <input type="hidden" name="variation_id" value="{{ object.variation_set.first.id }}">
                 <h3 class="text-left">
                     {% if object.variation_set.first.sale_price %}
                         {{ object.variation_set.first.sale_price }}
@@ -110,7 +95,7 @@
             {% endif %}
             <input class="form-control" type="number" name="qantity" value="1" title="quantity">
             <br/>
-            <input id="add-variation-submit-btn" type="submit" class="btn btn-default" value="Add to Cart">
+            <input id="add-to-cart-btn" type="submit" class="btn btn-default" value="Add to Cart">
         </form>
         <p id="description">
             {{ object.variation_set.first.sub_description }}

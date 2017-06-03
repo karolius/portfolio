@@ -9,15 +9,14 @@
 	font-size: 18px;
 	vertical-align: middle;
 }
-.container-alert-flash2 {
-	position: absolute;
-	top: 10px;
-	z-index: 50000;
-	width: 100%;
-	right: 0;
-	margin: 0;
-	display: none;
-}
+.container-alert-flash-prompt {
+                position: absolute;
+                top: 40px;
+                z-index: 50000;
+                width: 100%;
+                right: 0;
+                margin: 0;
+            }
 .btn-success{
 	background-color: #413F5D;
 	border-color: rgba(61, 23, 129, 0.58);
