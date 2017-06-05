@@ -83,6 +83,16 @@
                 <td class="text-right" colspan="4">Total price: </td>
                 <td id="cartitem-total-price" class="text-right">{{ object.total_price }}</td>
             </tr>
+            <tr>
+                <td colspan="5" align="center">
+                    <a href="{% url 'products:list' %}" class="btn btn-success">
+                        Add more products
+                    </a>
+                    <a href="{% url 'products:list' %}" class="btn btn-success">
+                        Go to checkout
+                    </a>
+                </td>
+            </tr>
             </tbody>
         </table>
     </div>
