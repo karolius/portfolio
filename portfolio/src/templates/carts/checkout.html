@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+    {% if not user_is_auth %}
+        <div class='row text-center'>
+            <div class='col-sm-6'>
+                <h1>Contunue as guest</h1>
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    {{ email_form|crispy }}
+                    <input class='btn btn-block btn-primary' type="submit"value="Submit" />
+                </form>
+            </div>
+            <div class='col-sm-6'>
+                <div class='row'>
+                    <h1>Login</h1>
+                    <form method="post" action="{% url 'auth_login' %}">
+                        {% csrf_token %}
+                        {{ login_form|crispy }}
+
+                        <input class='btn btn-block btn-primary' type="submit" value="{% trans 'Submit' %}" />
+                        <input type="hidden" name="next" value="{{ next_url }}" />
+                    </form>
+                </div>
+                <hr />
+                <div class='row'>
+                    <div class='col-sm-6 col-sm-offset-3 text-align-center'>
+                        <p>{% trans "Forgot password" %}? <a href="{% url 'auth_password_reset' %}">{% trans "Reset it" %}</a>!</p>
+                        <p>{% trans "Not member" %}? <a href="{% url 'registration_register' %}">{% trans "Register" %}</a>!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        else
+    {% endif %}
+{% endblock %}

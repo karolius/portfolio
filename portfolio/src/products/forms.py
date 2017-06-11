@@ -1,10 +1,10 @@
 from django import forms
-from django.forms.models import modelformset_factory
+from django.forms.models import modelformset_factory, ModelForm
 
 from .models import Product, Category, Variation
 
 
-class ProductModelForm(forms.ModelForm):
+class ProductModelForm(ModelForm):
 
     class Meta:
         model = Product

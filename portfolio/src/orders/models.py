@@ -10,14 +10,13 @@ ORDER_STATUS_CHOICES = (("canceled", "Canceled"),
 
 
 ADDRESS_TYPE = (('billing', 'Billing'),
-                ('shipping', 'Shipping'),
-                )
+                ('shipping', 'Shipping'),)
 
 
 class UserCheckout(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL, blank=True, null=True)
-    email = models.EmailField(blank=False, null=False, max_length=120)
-    # payment checkout
+    email = models.EmailField(unique=True, blank=False, null=False, max_length=120)
+    payment_token = models.CharField(max_length=120, null=True, blank=True)
 
     def __str__(self):
         return self.email
@@ -37,12 +36,12 @@ class UserAddress(models.Model):
         return "%s-%s" % (user if user else email, self.street)
 
 
-class Order(models.Model):
-    user = models.ForeignKey("UserCheckout")  # it have to bee null=True
+class Order(models.Model):  # when order is created, we just need cart, else can come later
+    user = models.ForeignKey("UserCheckout", null=True)  # it have to bee null=True
     cart = models.ForeignKey(Cart)
     status = models.CharField(max_length=120, choices=ORDER_STATUS_CHOICES, default="created")
-    billing_address = models.ForeignKey("UserAddress", related_name="billing_address")
-    shipping_address = models.ForeignKey("UserAddress", related_name="shipping_address")
+    billing_address = models.ForeignKey("UserAddress", related_name="billing_address", null=True)
+    shipping_address = models.ForeignKey("UserAddress", related_name="shipping_address", null=True)
     shipping_cost = models.DecimalField(decimal_places=2, max_digits=30, default="12.00")
     order_total = models.DecimalField(decimal_places=2, max_digits=30, default="0.00")
 

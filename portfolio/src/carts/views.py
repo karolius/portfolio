@@ -1,8 +1,13 @@
+from django.contrib.auth.forms import AuthenticationForm
 from django.core.urlresolvers import reverse
 from django.http import Http404, JsonResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
+from django.views.generic import DetailView
 from django.views.generic.base import View
+from django.views.generic.edit import FormMixin
 
+from orders.forms import GuestCheckoutForm
+from orders.models import UserCheckout
 from products.models import Variation
 from .models import Cart, CartItem
 
@@ -34,8 +39,8 @@ class CartView(View):
         # set session expiration time as long as browser is open
         self.request.session.set_expiry(0)
         cart_id = self.request.session.get("cart_id")
-        cart = Cart.objects.get_or_create(id=cart_id)[0]
-        if cart_id is None:
+        cart, cart_created = Cart.objects.get_or_create(id=cart_id)
+        if cart_created:
             self.request.session["cart_id"] = cart.id
 
         user = self.request.user
@@ -105,7 +110,6 @@ class CartView(View):
             total_price = None
         return total_price
 
-
     def get_tax_total_or_none(self, cart_item):
         try:
             tax_total = cart_item.cart.tax_total
@@ -133,3 +137,101 @@ class CartView(View):
         except:
             cart_item_total_price = None
         return cart_item_total_price
+
+
+# class CheckoutView(DetailView):
+#     model = Cart
+#     # template_name = "carts/checkout_view.html"
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(CheckoutView, self).get_context_data()
+#         user = self.request.user
+#         user_is_auth = user.is_authenticated()
+#         order = self.get_order()
+#
+#
+#
+#
+#         return context
+#
+#     def get_cart(self):
+#         cart_id = self.request.session.get("cart_id")
+#         if cart_id is None:
+#             return None
+#         cart = Cart.objects.get(id=cart_id)
+#         if cart.items.count < 1:
+#             return None
+#         return cart
+#
+#     def get_order(self):
+#         cart = self.get_cart()
+#         if cart is None:
+#             return None
+#
+#         order_id = self.request.session.get("order_id")
+#         if order_id is None:
+#             order = Order.objects.create(cart=cart)
+#             self.request.session["order_id"] = order.id
+#         else:
+#             order = Order.objects.get(id=order_id)
+#         return order
+
+
+class CheckoutView(FormMixin, DetailView):
+    model = Cart
+    template_name = "carts/checkout.html"
+    form_class = GuestCheckoutForm
+
+    def get_object(self, queryset=None):
+        cart_id = self.request.session.get("cart_id")
+        if cart_id is None:
+            return redirect("cart")
+        cart = Cart.objects.get(id=cart_id)
+        return cart
+
+    def get_context_data(self, **kwargs):
+        context = super(CheckoutView, self).get_context_data()
+        user_checkout_id = self.request.session.get("user_checkout_id")
+        user_authenticated = self.request.user.is_authenticated
+        user_is_auth = False
+
+        if user_authenticated or user_checkout_id:
+            user_is_auth = True
+        else:
+            context["email_form"] = self.get_form()
+            context["login_form"] = AuthenticationForm()
+            context["next_url"] = self.request.build_absolute_uri()
+
+        context["user_is_auth"] = user_is_auth
+        return context
+
+    def get_success_url(self):
+        return reverse("checkout")
+
+    def post(self, request):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            email = form.cleaned_data.get("email1")
+            user_checkout, user_checkout_created = UserCheckout.objects.get_or_create(email=email)
+            if user_checkout_created:
+                self.request.session["user_checkout_id"] = user_checkout.id
+            return self.form_valid(form)
+        return self.form_invalid(form)
+
+    def get(self, request, *args, **kwargs):
+        get_data = super(CheckoutView, self).get(*args, **kwargs)
+
+
+
+        Order.objects.create
+        user = models.Fo
+        cart = models.Fo
+        status = models.
+        billing_address =
+        shipping_address =
+        shipping_cost =
+        order_total = mo
+
+
+        return get_data

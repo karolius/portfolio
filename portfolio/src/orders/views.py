@@ -1,7 +1,26 @@
-from django.shortcuts import render
 from django.views.generic import DetailView
+from django.views.generic import FormView
+
+from orders.forms import UserAddressForm
+from orders.models import UserAddress, Order
 
 
-class OrderDetailView(DetailView):
-    def get_context_data(self, **kwargs):
-        return super(OrderDetailView, self).get_context_data()
+class AddressSelectFormView(FormView):
+    form_class = UserAddressForm
+    template_name = "orders/address.html"
+
+    def get_form(self, form_class=None):
+        form = super(AddressSelectFormView, self).get_form()
+        self.set_form_addreses_according_to_auth(form)
+        return form
+
+    def set_form_addreses_according_to_auth(self, form):
+        if self.request.user.is_authenticated():
+            email = self.request.user.email
+            form.fields["billing_address"].queryset = UserAddress.objects.filter(user_checkout__email=email)
+            form.fields["shipping_address"].queryset = UserAddress.objects.filter(user_checkout__email=email)
+        else:
+            billing_address_id = self.request.session.get("billing_address_id", [])
+            shipping_address_id = self.request.session.get("shipping_address_id", [])
+            form.fields["billing_address"].queryset = UserAddress.objects.filter(id__in=billing_address_id)
+            form.fields["shipping_address"].queryset = UserAddress.objects.filter(id__in=shipping_address_id)
