@@ -37,11 +37,11 @@ class UserAddress(models.Model):
 
 
 class Order(models.Model):  # when order is created, we just need cart, else can come later
-    user = models.ForeignKey("UserCheckout", null=True)  # it have to bee null=True
+    user_checkout = models.ForeignKey("UserCheckout")  # it have to bee null=True
     cart = models.ForeignKey(Cart)
     status = models.CharField(max_length=120, choices=ORDER_STATUS_CHOICES, default="created")
-    billing_address = models.ForeignKey("UserAddress", related_name="billing_address", null=True)
-    shipping_address = models.ForeignKey("UserAddress", related_name="shipping_address", null=True)
+    billing_address = models.ForeignKey("UserAddress", related_name="billing_address")
+    shipping_address = models.ForeignKey("UserAddress", related_name="shipping_address")
     shipping_cost = models.DecimalField(decimal_places=2, max_digits=30, default="12.00")
     order_total = models.DecimalField(decimal_places=2, max_digits=30, default="0.00")
 

@@ -7,7 +7,7 @@ from django.views.generic.base import View
 from django.views.generic.edit import FormMixin
 
 from orders.forms import GuestCheckoutForm
-from orders.models import UserCheckout
+from orders.models import UserCheckout, Order, UserAddress
 from products.models import Variation
 from .models import Cart, CartItem
 
@@ -219,19 +219,33 @@ class CheckoutView(FormMixin, DetailView):
             return self.form_valid(form)
         return self.form_invalid(form)
 
-    def get(self, request, *args, **kwargs):
-        get_data = super(CheckoutView, self).get(*args, **kwargs)
-
-
-
-        Order.objects.create
-        user = models.Fo
-        cart = models.Fo
-        status = models.
-        billing_address =
-        shipping_address =
-        shipping_cost =
-        order_total = mo
-
-
-        return get_data
+    # def get(self, request, *args, **kwargs):
+    #     get_data = super(CheckoutView, self).get(request, *args, **kwargs)
+    #     session_data = self.request.session
+    #     user_checkout_id = session_data.get("user_checkout_id")
+    #     if user_checkout_id:
+    #         cart = self.get_object()  # at this moment, cart always already exist
+    #
+    #         order_id = session_data.get("order_id")
+    #         if order_id:
+    #             order = Order.objects.get(id=order_id)
+    #         else:
+    #             order = Order()
+    #             session_data["order_id"] = order.id  # Order.objects.create
+    #
+    #         billing_address_id = session_data.get("billing_address_id")
+    #         shipping_address_id = session_data.get("shipping_address_id")
+    #         if billing_address_id is None or shipping_address_id is None:
+    #             return redirect("order_address")
+    #
+    #         order.cart = cart
+    #         order.user_checkout = UserCheckout.objects.get(id=user_checkout_id)
+    #         order.billing_address = UserAddress.objects.get(id=billing_address_id)
+    #         order.shipping_address = UserAddress.objects.get(id=shipping_address_id)
+    #         order.save()
+    #
+    #         # status = models.
+    #         # shipping_cost
+    #         # order_total
+    #
+    #     return get_data

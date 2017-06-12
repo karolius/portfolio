@@ -24,3 +24,8 @@ class AddressSelectFormView(FormView):
             shipping_address_id = self.request.session.get("shipping_address_id", [])
             form.fields["billing_address"].queryset = UserAddress.objects.filter(id__in=billing_address_id)
             form.fields["shipping_address"].queryset = UserAddress.objects.filter(id__in=shipping_address_id)
+
+    def form_valid(self, form):
+        form = super(AddressSelectFormView, self).form_valid(form)
+        print("FORM:\n", form)
+        return form

@@ -14,7 +14,7 @@ urlpatterns = [
     url(r'^cart/$', CartView.as_view(), name='cart'),
     url(r'^cart/count/$', ItemCoutView.as_view(), name='item_count'),
     url(r'^cart/checkout/$', CheckoutView.as_view(), name='checkout'),
-    url(r'^cart/checkout/address/$', AddressSelectFormView.as_view(), name='checkout_address'),
+    url(r'^cart/checkout/address/$', AddressSelectFormView.as_view(), name='order_address'),
 
     url(r'^$', test, name='home'),
     url(r'^products/', include("products.urls", namespace="products")),
