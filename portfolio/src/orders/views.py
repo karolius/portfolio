@@ -1,3 +1,6 @@
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.views.generic import DetailView
 from django.views.generic import FormView
 
@@ -26,6 +29,13 @@ class AddressSelectFormView(FormView):
             form.fields["shipping_address"].queryset = UserAddress.objects.filter(id__in=shipping_address_id)
 
     def form_valid(self, form):
-        form = super(AddressSelectFormView, self).form_valid(form)
-        print("FORM:\n", form)
-        return form
+        self.set_addresses_ids_in_session(form)
+        return super(AddressSelectFormView, self).form_valid(form)
+
+    def set_addresses_ids_in_session(self, form):
+        session_data = self.request.session
+        session_data["billing_address_id"] = form.cleaned_data["billing_address"].id
+        session_data["shipping_address_id"] = form.cleaned_data["shipping_address"].id
+
+    def get_success_url(self):
+        return reverse("checkout")
