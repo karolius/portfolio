@@ -35,6 +35,24 @@
             </div>
         </div>
     {% else %}
-        else
+        <div class="col-sm-4 col-sm-offset-4">
+        <h1>Your Order:</h1>
+        <table class="table text-center">
+            <tbody>
+            <tr><td colspan="2">Item{% if order.cart.cartitem_set.count > 1 %}s{% endif %}:
+            {% for cartitem in order.cart.cartitem_set.all %}
+                <br /><b>{{ cartitem.variation }}</b> x {{ cartitem.quantity }}
+            {% endfor %}
+            </td>
+            </tr>
+
+            <tr><td>Tax subtotal:</td><td>{{ order.cart.subtotal }}</td></tr>
+            <tr><td>Tax total:</td><td>{{ order.cart.tax_total }}</td></tr>
+            <tr><td>Cart total:</td><td>{{ order.cart.total }}</td></tr>
+            <tr><td>Shipping total:</td><td>{{ order.shipping_total }}</td></tr>
+            <tr><td>Order total:</td><td>{{ order.order_total }}</td></tr>
+            </tbody>
+        </table>
+        </div>
     {% endif %}
 {% endblock %}

@@ -11,7 +11,7 @@ class CartItem(models.Model):
     cart = models.ForeignKey("Cart")
     variation = models.ForeignKey(Variation)
     quantity = models.IntegerField(default=1)
-    items_total_price = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    items_total = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
 
     def __str__(self):
         return str(self.variation)
@@ -24,7 +24,7 @@ def cartitem_pre_action_receiver(sender, instance, *args, **kwargs):
     qty = instance.quantity
     if qty >= 1:
         price = Decimal(instance.variation.get_price())
-        instance.items_total_price = price * qty
+        instance.items_total = price * qty
 
 pre_save.connect(cartitem_pre_action_receiver, sender=CartItem)
 
@@ -44,7 +44,7 @@ class Cart(models.Model):
     # updated = models.DateTimeField(auto_now_add=False, auto_now=True)
     subtotal = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     tax_total = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
-    total_price = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
+    total = models.DecimalField(max_digits=20, decimal_places=2, default=0.00)
     tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0.23)
 
     def __str__(self):
@@ -53,7 +53,7 @@ class Cart(models.Model):
     def update_subtotal(self):
         subtotal = 0
         for cartitem in self.cartitem_set.all():
-            subtotal += cartitem.items_total_price
+            subtotal += cartitem.items_total
         self.subtotal = "{0:.2f}".format(subtotal)
         self.save()
 
@@ -62,6 +62,6 @@ def do_tax_cart_and_pre_receiver(sender, instance, *args, **kwargs):
     subtotal = Decimal(instance.subtotal)
     tax_total = round(subtotal * Decimal(instance.tax_rate), 2)
     instance.tax_total = "{0:.2f}".format(tax_total)
-    instance.total_price = "{0:.2f}".format(round(subtotal + tax_total, 2))
+    instance.total = "{0:.2f}".format(round(subtotal + tax_total, 2))
 
 pre_save.connect(do_tax_cart_and_pre_receiver, sender=Cart)

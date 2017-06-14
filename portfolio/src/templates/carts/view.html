@@ -23,11 +23,11 @@
                     if (data.deleted){
                         $("#cartitem-"+variation_id).fadeOut();
                     } else {
-                        $("#cartitem-total-price-"+variation_id).text(data.cart_item_total_price);
+                        $("#cartitem-total-price-"+variation_id).text(data.cart_item_total);
                         $("#cartitem-total-items").text(data.total_items);
                         $("#cartitem-subtotal").text(data.subtotal);
                         $("#cartitem-tax-total").text(data.tax_total);
-                        $("#cartitem-total-price").text(data.total_price);
+                        $("#cartitem-total-price").text(data.total);
                     }
                 }
             })
@@ -63,7 +63,7 @@
                                    class="btn-update-qty btn btn-link" value="Update Item">
                         </form>
                     </td>
-                    <td id="cartitem-total-price-{{ cartitem.variation.id }}">{{ cartitem.items_total_price }}</td>
+                    <td id="cartitem-total-price-{{ cartitem.variation.id }}">{{ cartitem.items_total }}</td>
                     <td><a href="{{ cartitem.remove_from_cart }}">X</a></td>
                 </tr>
             {% endfor %}
@@ -81,14 +81,14 @@
             </tr>
             <tr>
                 <td class="text-right" colspan="4">Total price: </td>
-                <td id="cartitem-total-price" class="text-right">{{ object.total_price }}</td>
+                <td id="cartitem-total-price" class="text-right">{{ object.total }}</td>
             </tr>
             <tr>
                 <td colspan="5" align="center">
                     <a href="{% url 'products:list' %}" class="btn btn-success">
                         Add more products
                     </a>
-                    <a href="{% url 'products:list' %}" class="btn btn-success">
+                    <a href="{% url 'checkout' %}" class="btn btn-success">
                         Go to checkout
                     </a>
                 </td>

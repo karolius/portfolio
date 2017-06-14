@@ -7,6 +7,7 @@ from django.views.generic.base import View
 from django.views.generic.edit import FormMixin
 
 from orders.forms import GuestCheckoutForm
+from orders.mixins import CartOrderMixin
 from orders.models import UserCheckout, Order, UserAddress
 from products.models import Variation
 from .models import Cart, CartItem
@@ -21,7 +22,7 @@ class ItemCoutView(View):
             if cart_id is not None:
                 cart = Cart.objects.get(id=cart_id)
                 cart_item_count = cart.items.count()
-                cart_sum_price = str(cart.total_price)
+                cart_sum_price = str(cart.total)
 
             # set count, then it wont flip
             request.session["cart_item_count"] = cart_item_count
@@ -83,11 +84,11 @@ class CartView(View):
                 "deleted": delete_cartitem,
                 "flash_message": flash_message,
                 "cart_item_added": cart_item_added,
-                "cart_item_total_price": self.get_cart_item_total_price_or_none(cart_item),
+                "cart_item_total": self.get_cart_item_total_or_none(cart_item),
                 "subtotal": self.get_subtotal_or_none(cart_item),
                 "total_items": self.get_total_items(cart_item),
                 "tax_total": self.get_tax_total_or_none(cart_item),
-                "total_price": self.get_total_price_or_none(cart_item),
+                "total": self.get_total_or_none(cart_item),
             }
             return JsonResponse(data)
 
@@ -103,12 +104,12 @@ class CartView(View):
             raise Http404
         return delete_cartitem
 
-    def get_total_price_or_none(self, cart_item):
+    def get_total_or_none(self, cart_item):
         try:
-            total_price = cart_item.cart.total_price
+            total = cart_item.cart.total
         except:
-            total_price = None
-        return total_price
+            total = None
+        return total
 
     def get_tax_total_or_none(self, cart_item):
         try:
@@ -131,12 +132,12 @@ class CartView(View):
             subtotal = None
         return subtotal
 
-    def get_cart_item_total_price_or_none(self, cart_item):
+    def get_cart_item_total_or_none(self, cart_item):
         try:
-            cart_item_total_price = cart_item.items_total_price
+            cart_item_total = cart_item.items_total
         except:
-            cart_item_total_price = None
-        return cart_item_total_price
+            cart_item_total = None
+        return cart_item_total
 
 
 # class CheckoutView(DetailView):
@@ -177,16 +178,19 @@ class CartView(View):
 #         return order
 
 
-class CheckoutView(FormMixin, DetailView):
+class CheckoutView(CartOrderMixin, FormMixin, DetailView):
+    # TODO
+    # IF biling or shipping exist
+    # -> [initially set default addresses (first added is always default), use same for other field or set it as defualt
+    #  with flash prompt] or [add more]
+    # ELSE
+    # -> get new addreses and set it as default
     model = Cart
     template_name = "carts/checkout.html"
     form_class = GuestCheckoutForm
 
     def get_object(self, queryset=None):
-        cart_id = self.request.session.get("cart_id")
-        if cart_id is None:
-            return None
-        return Cart.objects.get(id=cart_id)
+        return self.get_cart()
 
     def get_context_data(self, **kwargs):
         context = super(CheckoutView, self).get_context_data()
@@ -207,6 +211,7 @@ class CheckoutView(FormMixin, DetailView):
             context["next_url"] = self.request.build_absolute_uri()
 
         context["user_is_auth"] = user_is_auth
+        context["order"] = self.get_order()
         return context
 
     def get_success_url(self):
@@ -215,7 +220,7 @@ class CheckoutView(FormMixin, DetailView):
     def post(self, request):
         self.object = self.get_object()
 
-        user = self.request.GET.user
+        user = self.request.user
         form = self.get_form()
         if form.is_valid():
             email = form.cleaned_data.get("email1")
@@ -235,23 +240,15 @@ class CheckoutView(FormMixin, DetailView):
         session_data = self.request.session
         user_checkout_id = session_data.get("user_checkout_id")
         if user_checkout_id:
-            cart = self.get_object()
-            if cart is None:
+            order = self.get_order()
+            if order is None:  # TODO js after 15 sec redirect to prod. list
                 return redirect("cart")
-
-            order_id = session_data.get("order_id")
-            if order_id:
-                order = Order.objects.get(id=order_id)
-            else:
-                order = Order()
-                session_data["order_id"] = order.id  # Order.objects.create
 
             billing_address_id = session_data.get("billing_address_id")
             shipping_address_id = session_data.get("shipping_address_id")
             if billing_address_id is None or shipping_address_id is None:
                 return redirect("order_address")
 
-            order.cart = cart
             order.user_checkout = UserCheckout.objects.get(id=user_checkout_id)
             order.billing_address = UserAddress.objects.get(id=billing_address_id)
             order.shipping_address = UserAddress.objects.get(id=shipping_address_id)
@@ -260,5 +257,16 @@ class CheckoutView(FormMixin, DetailView):
             # status = models.
             # shipping_cost
             # order_total
-
         return get_data
+
+    def get_order(self):
+        order_id = self.request.session.get("order_id")
+        if order_id:
+            order = Order.objects.get(id=order_id)
+        else:
+            cart = self.get_cart()
+            if cart is None:
+                return None
+            order = Order.objects.create(cart=cart)
+            self.request.session["order_id"] = order.id
+        return order

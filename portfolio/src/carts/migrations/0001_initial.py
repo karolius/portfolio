@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('subtotal', models.DecimalField(decimal_places=2, default=0.0, max_digits=20)),
                 ('tax_total', models.DecimalField(decimal_places=2, default=0.0, max_digits=20)),
-                ('total_price', models.DecimalField(decimal_places=2, default=0.0, max_digits=20)),
+                ('total', models.DecimalField(decimal_places=2, default=0.0, max_digits=20)),
                 ('tax_rate', models.DecimalField(decimal_places=2, default=0.0, max_digits=5)),
             ],
         ),
@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('quantity', models.IntegerField(default=1)),
-                ('items_total_price', models.DecimalField(decimal_places=2, default=0.0, max_digits=15)),
+                ('items_total', models.DecimalField(decimal_places=2, default=0.0, max_digits=15)),
                 ('cart', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='carts.Cart')),
                 ('variation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='products.Variation')),
             ],
