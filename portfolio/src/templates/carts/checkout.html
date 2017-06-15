@@ -7,11 +7,11 @@
     {% if not user_is_auth %}
         <div class='row text-center'>
             <div class='col-sm-6'>
-                <h1>Contunue as guest</h1>
+                <h1>Continue as guest</h1>
                 <form method="POST" action="">
                     {% csrf_token %}
                     {{ email_form|crispy }}
-                    <input class='btn btn-block btn-primary' type="submit"value="Submit" />
+                    <input class='btn btn-block btn-primary' type="submit" value="Submit" />
                 </form>
             </div>
             <div class='col-sm-6'>

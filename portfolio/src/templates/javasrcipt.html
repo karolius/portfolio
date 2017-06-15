@@ -8,6 +8,7 @@
 <script src="{% static 'js/custom.js' %}"></script>
 
 <script>
+    {#  #}
     function updateCartCount() {
         var badge_items_count = $("#cart-count-badge");
         var badge_sum_price = $("#cart-sum-price-badge");
@@ -15,8 +16,16 @@
             type: "GET",
             url: "{% url 'item_count' %}",
             success: function (data) {
-                badge_items_count.text(data.cart_item_count);
-                badge_sum_price.text(data.cart_sum_price + " €");
+                console.log("1count: ", data.cart_item_count);
+                if(data.cart_item_count < 1){
+                    badge_items_count.hide();
+                    badge_sum_price.hide();
+                } else {
+                    badge_items_count.show();
+                    badge_sum_price.show();
+                    badge_items_count.text(data.cart_item_count);
+                    badge_sum_price.text(data.cart_sum_price + " €");
+                }
             },
             error: function (response, error) {
                 console.log(response);

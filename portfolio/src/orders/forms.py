@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import ModelForm
 
 from orders.models import UserCheckout, UserAddress
 
@@ -21,10 +22,22 @@ class GuestCheckoutForm(forms.Form):
         return email2
 
 
-class UserAddressForm(forms.Form):
+class UserAddressChooseForm(forms.Form):
     billing_address = forms.ModelChoiceField(
         queryset=UserAddress.objects.filter(type="billing"),
         empty_label=None)
     shipping_address = forms.ModelChoiceField(
         queryset=UserAddress.objects.filter(type="shipping"),
         empty_label=None)
+
+
+class UserAddressModelForm(forms.ModelForm):
+    class Meta:
+        model = UserAddress
+        fields = [
+            'type',
+            'street',
+            'city',
+            'state',
+            'zipcode',
+        ]

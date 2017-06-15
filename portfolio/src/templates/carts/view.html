@@ -10,7 +10,6 @@
                 variation_id: variation_id,
                 qantity: qantity
             };
-            console.log(data);
 
             $.ajax({
                 type: "GET",
@@ -32,6 +31,15 @@
                 }
             })
         });
+
+        function redirect(){
+            window.location.href = "{% url 'products:list' %}";
+        }
+        {% if object.cartitem_set.count < 1 %}
+            setTimeout(redirect, 10000);
+            {# TODO add flash message that you will be redirected to prod list #}
+            {# TODO empty list comes in when theres no products #}
+        {% endif %}
     {% endblock %}
 </script>
 
@@ -39,63 +47,63 @@
 {% block content %}
     {% if object.cartitem_set.count > 0 %}
         <div class="col-sm-8 col-sm-offset-2" id="cart-table">
-        <p class="lead">Your cart:</p>
-        <table class="table">
-            <thead>
-            <tr>
-                <th>Product</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Products price</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for cartitem in object.cartitem_set.all %}
-                <tr id="cartitem-{{ cartitem.variation.id }}">
-                    <td>{{ cartitem }}</td>
-                    <td>{{ cartitem.variation.get_price }}</td>
-                    <td>
-                        <form method="GET" action=".">
-                            <input type="hidden" name="variation_id" value="{{ cartitem.variation.id }}">
-                            <input class="cartitem-qty" type="number" name="qantity"
-                                   value="{{ cartitem.quantity }}" title="quantity" width="4">
-                            <input id="update-quantity-btn" type="submit" style="display: none;"
-                                   class="btn-update-qty btn btn-link" value="Update Item">
-                        </form>
-                    </td>
-                    <td id="cartitem-total-price-{{ cartitem.variation.id }}">{{ cartitem.items_total }}</td>
-                    <td><a href="{{ cartitem.remove_from_cart }}">X</a></td>
+            <p class="lead">Your cart:</p>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Products price</th>
                 </tr>
-            {% endfor %}
-            <tr>
-                <td class="text-right" colspan="4">Total items: </td>
-                <td id="cartitem-total-items" class="text-right">{{ object.cartitem_set.count }}</td>
-            </tr>
-            <tr>
-                <td class="text-right" colspan="4">Subtotal: </td>
-                <td id="cartitem-subtotal" class="text-right">{{ object.subtotal }}</td>
-            </tr>
-            <tr>
-                <td class="text-right" colspan="4">Tax total: </td>
-                <td id="cartitem-tax-total" class="text-right">{{ object.tax_total }}</td>
-            </tr>
-            <tr>
-                <td class="text-right" colspan="4">Total price: </td>
-                <td id="cartitem-total-price" class="text-right">{{ object.total }}</td>
-            </tr>
-            <tr>
-                <td colspan="5" align="center">
-                    <a href="{% url 'products:list' %}" class="btn btn-success">
-                        Add more products
-                    </a>
-                    <a href="{% url 'checkout' %}" class="btn btn-success">
-                        Go to checkout
-                    </a>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                {% for cartitem in object.cartitem_set.all %}
+                    <tr id="cartitem-{{ cartitem.variation.id }}">
+                        <td>{{ cartitem }}</td>
+                        <td>{{ cartitem.variation.get_price }}</td>
+                        <td>
+                            <form method="GET" action=".">
+                                <input type="hidden" name="variation_id" value="{{ cartitem.variation.id }}">
+                                <input class="cartitem-qty" type="number" name="qantity"
+                                       value="{{ cartitem.quantity }}" title="quantity" width="4">
+                                <input id="update-quantity-btn" type="submit" style="display: none;"
+                                       class="btn-update-qty btn btn-link" value="Update Item">
+                            </form>
+                        </td>
+                        <td id="cartitem-total-price-{{ cartitem.variation.id }}">{{ cartitem.items_total }}</td>
+                        <td><a href="{{ cartitem.remove_from_cart }}">X</a></td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td class="text-right" colspan="4">Total items: </td>
+                    <td id="cartitem-total-items" class="text-right">{{ object.cartitem_set.count }}</td>
+                </tr>
+                <tr>
+                    <td class="text-right" colspan="4">Subtotal: </td>
+                    <td id="cartitem-subtotal" class="text-right">{{ object.subtotal }}</td>
+                </tr>
+                <tr>
+                    <td class="text-right" colspan="4">Tax total: </td>
+                    <td id="cartitem-tax-total" class="text-right">{{ object.tax_total }}</td>
+                </tr>
+                <tr>
+                    <td class="text-right" colspan="4">Total price: </td>
+                    <td id="cartitem-total-price" class="text-right">{{ object.total }}</td>
+                </tr>
+                <tr>
+                    <td colspan="5" align="center">
+                        <a href="{% url 'products:list' %}" class="btn btn-success">
+                            Add more products
+                        </a>
+                        <a href="{% url 'checkout' %}" class="btn btn-success">
+                            Go to checkout
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     {% else %}
         {% include 'carts/empty_cart.html' %}
     {% endif %}

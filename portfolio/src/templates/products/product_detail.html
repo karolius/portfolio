@@ -29,11 +29,23 @@
         });
 
 
+        {# Set submit button vallue according to quanitity (add/update or remove from cart #}
+        $(".form-control").change(function () {
+            var quantity = $(this).val();
+            var addToCartBtn = document.getElementById('add-to-cart-btn');
+
+            if(quantity < 1){
+                addToCartBtn.value = 'Remove from Cart';
+            } else {
+                addToCartBtn.value = 'Add to Cart';
+            }
+        });
+
+
         {# Ajax add to cart #}
         $("#add-to-cart-btn").click(function (event) {
             event.preventDefault();
             var formData = $("#add-to-cart-form").serialize();
-            console.log("DATA: "+formData);
             $.ajax({
                 type: "GET",
                 url: "{% url 'cart' %}",

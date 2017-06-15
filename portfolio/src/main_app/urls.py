@@ -3,7 +3,7 @@ from django.conf.urls import url, include
 from django.conf.urls.static import static
 from django.contrib import admin
 
-from orders.views import AddressSelectFormView
+from orders.views import AddressSelectFormView, UserAddressCreateView
 from .views import test
 from carts.views import CartView, ItemCoutView, CheckoutView
 
@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^cart/count/$', ItemCoutView.as_view(), name='item_count'),
     url(r'^cart/checkout/$', CheckoutView.as_view(), name='checkout'),
     url(r'^cart/checkout/address/$', AddressSelectFormView.as_view(), name='order_address'),
+    url(r'^cart/checkout/address/add$', UserAddressCreateView.as_view(), name='add_address'),
 
     url(r'^$', test, name='home'),
     url(r'^products/', include("products.urls", namespace="products")),

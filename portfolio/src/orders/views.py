@@ -1,46 +1,48 @@
-from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse
-from django.views.generic import DetailView
 from django.views.generic import FormView
+from django.views.generic.edit import CreateView
 
-from orders.forms import UserAddressForm
+from orders.forms import UserAddressChooseForm, UserAddressModelForm
 from orders.mixins import CartOrderMixin
-from orders.models import UserAddress, Order
+from orders.models import UserAddress, UserCheckout
 
 
 class AddressSelectFormView(CartOrderMixin, FormView):
     # TODO add phone (from profile data, but editable) info for curier etc.
-    form_class = UserAddressForm
+    form_class = UserAddressChooseForm
     template_name = "orders/address.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_cart() is None:
+            return redirect("cart")
+        billing_address, shipping_address = self.get_addresses()
+        if billing_address.count() == 0 and shipping_address.count() == 0:
+            return redirect("add_address")
+        return super(AddressSelectFormView, self).dispatch(request, *args, **kwargs)
 
     def get_form(self, form_class=None):
         # TODO add "use_the_same_address" checkbox for each field if "parent" exist
         form = super(AddressSelectFormView, self).get_form()
-        self.set_form_addresses_according_to_auth(form)
+        billing_address, shipping_address = self.get_addresses()
+        form.fields["billing_address"].queryset = billing_address
+        form.fields["shipping_address"].queryset = shipping_address
         return form
 
-    def get(self, request, *args, **kwargs):
-        if self.get_cart() is None:
-            return redirect("cart")
-        # TODO set billing_address_ids and shipping as class variables
-        # IF they are None: return redirect("add_address_form") (** check what comes first
-        #                                       - what if get_form inner method doesnt check if ids are in session)
-        return super(AddressSelectFormView, self).get(request, *args, **kwargs)
-
-    def set_form_addresses_according_to_auth(self, form):
+    def get_addresses(self):
         if self.request.user.is_authenticated():
             email = self.request.user.email
-            form.fields["billing_address"].queryset = UserAddress.objects.filter(user_checkout__email=email)
-            form.fields["shipping_address"].queryset = UserAddress.objects.filter(user_checkout__email=email)
-        else:
+            billing_address = UserAddress.objects.filter(user_checkout__email=email)
+            shipping_address = UserAddress.objects.filter(user_checkout__email=email)
+        else:  # anon user
             billing_address_ids = self.request.session.get("billing_address_id")
             shipping_address_ids = self.request.session.get("shipping_address_id")
-            if billing_address_ids is None or shipping_address_ids is None:
-                pass
-                # return redirect("add_address_form")
-            form.fields["billing_address"].queryset = UserAddress.objects.filter(id__in=billing_address_ids)
-            form.fields["shipping_address"].queryset = UserAddress.objects.filter(id__in=shipping_address_ids)
+            if billing_address_ids or shipping_address_ids:
+                billing_address = UserAddress.objects.filter(id__in=billing_address_ids)
+                shipping_address = UserAddress.objects.filter(id__in=shipping_address_ids)
+            else:  # no ids in session- return empty queries
+                billing_address, shipping_address = UserAddress.objects.none(), UserAddress.objects.none()
+        return billing_address, shipping_address
 
     def form_valid(self, form):
         self.set_addresses_ids_in_session(form)
@@ -53,3 +55,22 @@ class AddressSelectFormView(CartOrderMixin, FormView):
 
     def get_success_url(self):
         return reverse("checkout")
+
+
+class UserAddressCreateView(CreateView):
+    # TODO add "use_the_same_address" checkbox for each field if "parent" exist
+    # add set as defult for billing or shipping address
+    model = UserAddress
+    form_class = UserAddressModelForm
+    template_name = "products/product_form.html"
+
+    def form_valid(self, form):
+        self.get_user_checkout()
+        form.instance.user_checkout = self.get_user_checkout()
+        # TODO set_addresses_ids_in_session() can fit here, just change to []
+        return super(UserAddressCreateView, self).form_valid(form)
+
+    def get_user_checkout(self):
+        user_checkout_id = self.request.session.get("user_checkout_id")
+        user_checkout = UserCheckout.objects.get(id=user_checkout_id)
+        return user_checkout

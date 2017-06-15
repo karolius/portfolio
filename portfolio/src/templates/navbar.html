@@ -28,11 +28,11 @@
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <a href="{% url 'cart' %}">
-                        <span id="cart-count-badge" class="badge">
+                            <span id="cart-count-badge" class="badge">
                             {{ request.session.cart_item_count }}
                         </span>
-                        <i class="fa fa-shopping-basket fa-navbar-basket"></i>
-                        <span id="cart-sum-price-badge" class="badge">
+                            <i class="fa fa-shopping-basket fa-navbar-basket"></i>
+                            <span id="cart-sum-price-badge" class="badge">
                             {{ request.session.cart_sum_price }} €
                         </span>
                     </a>

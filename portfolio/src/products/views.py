@@ -1,7 +1,7 @@
+from django.contrib import messages
 from django.http import Http404
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
+from django.shortcuts import get_object_or_404
 from django.views.generic import CreateView
 from django.views.generic import DetailView
 from django.views.generic import ListView
@@ -10,8 +10,6 @@ from django.views.generic import UpdateView
 from .forms import ProductModelForm, VariationInventoryFormSet
 from .mixins import ProductIdMixin
 from .models import Product, Variation, Category
-
-from django.contrib import messages
 
 
 class ProductListView(ListView):
@@ -25,7 +23,7 @@ class ProductListView(ListView):
 
 class ProductDetailView(ProductIdMixin, DetailView):
     model = Product
-    
+
     def get_context_data(self, **kwargs):
         context = super(ProductDetailView, self).get_context_data(**kwargs)
         product = self.get_object()
