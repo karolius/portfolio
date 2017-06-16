@@ -70,6 +70,15 @@ class UserAddressCreateView(CreateView):
     form_class = UserAddressModelForm
     template_name = "products/product_form.html"
 
+    def get_form(self, *args, **kwargs):
+        return super(UserAddressCreateView, self).get_form(*args, **kwargs)
+
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(UserAddressCreateView, self).get_form_kwargs()
+        if self.request.user.is_authenticated:
+            kwargs["user_is_auth"] = True
+        return kwargs
+
     def form_valid(self, form):
         self.get_user_checkout()
         form.instance.user_checkout = self.get_user_checkout()

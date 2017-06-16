@@ -36,7 +36,7 @@
             window.location.href = "{% url 'products:list' %}";
         }
         {% if object.cartitem_set.count < 1 %}
-            setTimeout(redirect, 10000);
+            setTimeout(redirect, 7000);
             {# TODO add flash message that you will be redirected to prod list #}
             {# TODO empty list comes in when theres no products #}
         {% endif %}
