@@ -55,11 +55,9 @@ class Product(models.Model):
     title = models.CharField(max_length=120)
     description = models.TextField()
     price = models.DecimalField(max_digits=25, decimal_places=2)
-    sale_price = models.DecimalField(max_digits=25, decimal_places=2,
-                                     null=True, blank=True)
+    sale_price = models.DecimalField(max_digits=25, decimal_places=2, null=True, blank=True)
     sale_active = models.BooleanField(default=False)
-    media = models.ImageField(upload_to=download_media_location,  # TODO some weird migrations has place here ...
-                              null=True, blank=True,
+    media = models.ImageField(upload_to=download_media_location, null=True, blank=True,
                               storage=FileSystemStorage(location=settings.PROTECTED_ROOT))
     category = models.ManyToManyField("Category", blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="active")

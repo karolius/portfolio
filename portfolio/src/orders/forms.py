@@ -32,6 +32,15 @@ class UserAddressChooseForm(forms.Form):
 
 
 class UserAddressModelForm(forms.ModelForm):
+    # TODO add set as default field (when uncheck set Null on user_profile)
+    # if
+    # set_as_default = forms.BooleanField()
+    #
+    # def __init__(self):
+    #     super().__init__()
+    #     if check_something():
+    #         self.fields['receive_newsletter'].initial = True
+
     class Meta:
         model = UserAddress
         fields = [
