@@ -13,7 +13,8 @@ ORDER_STATUS_CHOICES = (("canceled", "Canceled"),
 
 
 ADDRESS_TYPE = (('billing', 'Billing'),
-                ('shipping', 'Shipping'),)
+                ('shipping', 'Shipping'),
+                ('outdated', 'Outdated'),)
 
 
 class UserCheckout(models.Model):

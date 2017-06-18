@@ -23,6 +23,23 @@ class GuestCheckoutForm(forms.Form):
 
 
 class UserAddressChooseForm(forms.Form):
+    field_order = None
+
+    def __init__(self, *args, **kwargs):
+        default_billing_address_id = kwargs.pop("default_billing_address_id", None)
+        default_shipping_address_id = kwargs.pop("default_shipping_address_id", None)
+        super(UserAddressChooseForm, self).__init__(*args, **kwargs)
+
+        self.fields['use_the_same_for_shipping_as_billing_address'] = forms.BooleanField()
+        self.fields['use_the_same_for_billing_as_shipping_address'] = forms.BooleanField()
+        self.set_empty_address_label(field_name='billing_address', address_id=default_billing_address_id)
+        self.set_empty_address_label(field_name='shipping_address', address_id=default_shipping_address_id)
+
+    def set_empty_address_label(self, field_name, address_id):
+        if address_id is not None:
+            billing_address = UserAddress.objects.get(id=address_id)
+            self.fields[field_name].empty_label = billing_address
+
     billing_address = forms.ModelChoiceField(
         queryset=UserAddress.objects.filter(type="billing"),
         empty_label=None)
@@ -36,7 +53,7 @@ class UserAddressModelForm(forms.ModelForm):
         user_is_auth = kwargs.pop('user_is_auth', None)
         super().__init__(*args, **kwargs)
         if user_is_auth:
-            self.fields['set_as_default'] = forms.BooleanField()
+            self.fields['set_address_as_default'] = forms.BooleanField()
 
     class Meta:
         model = UserAddress

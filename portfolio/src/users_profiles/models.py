@@ -18,7 +18,7 @@ class UserProfile(models.Model):
                                                  related_name='default_shipping_address')
 
     def __str__(self):
-        return self.user
+        return self.user.username
 
 
 @receiver(post_save, sender=User)
