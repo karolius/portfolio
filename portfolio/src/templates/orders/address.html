@@ -4,9 +4,19 @@
 
 
 {% block content %}
-    <form method="POST" action="">
+    <div class="col-xs-8 col-xs-offset-2">
+        <form method="POST" action="">
         {% csrf_token %}
         {{ form|crispy }}
-        <input type="submit" class="btn btn-block btn-primary" value="Submit">
+        <div class="row ">
+            <div class="col-xs-6">
+                <input type="submit" class="btn btn-block btn-primary" value="Submit">
+            </div>
+            <div class="col-xs-6">
+                <a href="{% url 'add_address' %}" class="btn btn-block btn-primary">Add Address</a>
+            </div>
+        </div>
     </form>
+    </div>
+
 {% endblock %}
