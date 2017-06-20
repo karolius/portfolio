@@ -18,6 +18,8 @@ from users_profiles.models import UserProfile
 # if its other type-> inform it exist.
 # Max addreses on list is 10, before adding new you have to delete any other.
 
+# Changing email in choseform or add form with flag to redirect just once.
+
 class AddressSelectFormView(CartOrderMixin, FormView):
     # TODO add phone (from profile data, but editable) info for curier etc.
     form_class = UserAddressChooseForm
@@ -47,15 +49,8 @@ class AddressSelectFormView(CartOrderMixin, FormView):
 
     def get_form_kwargs(self, *args, **kwargs):
         form_kwargs = super(AddressSelectFormView, self).get_form_kwargs()
-        user = self.request.user
-        if user.is_authenticated:  # get default addreses to set in form_class
-            user_profile = UserProfile.objects.get(user=user)
-            default_billing_address = user_profile.default_billing_address
-            default_shipping_address = user_profile.default_shipping_address
-            if default_billing_address is not None:
-                form_kwargs["default_billing_address_id"] = default_billing_address.id
-            if default_shipping_address is not None:
-                form_kwargs["default_shipping_address_id"] = default_shipping_address.id
+        if self.request.user.is_authenticated:  # get default addreses to set in form_class
+            self.set_default_addresses_in_kwargs(form_kwargs)
         return form_kwargs
 
     def get_addresses(self):
@@ -74,6 +69,24 @@ class AddressSelectFormView(CartOrderMixin, FormView):
         return billing_address, shipping_address
 
     def form_valid(self, form):
+        print("FORM:\n",form.cleaned_data)
+        use_the_same_address = form.cleaned_data["use_the_same_address"]
+        if use_the_same_address:
+            # Create or get address
+            billing_address = form.cleaned_data["billing_address"]
+            shipping_address = form.cleaned_data["shipping_address"]
+            if billing_address:
+                new_address = self.user_address_get_or_create_by(base_instance=billing_address)
+                form.cleaned_data["shipping_address"] = new_address
+            elif shipping_address:
+                new_address = self.user_address_get_or_create_by(base_instance=shipping_address)
+                form.cleaned_data["billing_address"] = new_address
+            if not self.request.user.is_authenticated:
+                # TODO be sure new addres exist, and check what happens when address change to outdated and new is
+                # populated by it.
+                # TODO change form that it explicitly tell what user can do (eg. theres billing and shipping what happes when mark use the same)
+                self.add_session_address_ids(address=new_address)
+
         self.set_chosen_addresses_ids_in_session(form)
         # TODO Set address the same for each of label -> create if not exist
         # add checkboxes for logged in users to set default shwiching addresses.
@@ -81,16 +94,40 @@ class AddressSelectFormView(CartOrderMixin, FormView):
         # Exclude outdated addresses from add_form
         return super(AddressSelectFormView, self).form_valid(form)
 
+    def user_address_get_or_create_by(self, base_instance):
+        if base_instance.type == 'shipping':
+            type = 'billing'
+        else:
+            type = 'shipping'
+        return UserAddress.objects.get_or_create(
+            user_checkout=base_instance.user_checkout,
+            type=type,
+            street=base_instance.street,
+            city=base_instance.city,
+            state=base_instance.state,
+            zipcode=base_instance.zipcode,
+        )[0]
+
     def set_chosen_addresses_ids_in_session(self, form):
         session_data = self.request.session
         session_data["billing_address_id"] = form.cleaned_data["billing_address"].id
         session_data["shipping_address_id"] = form.cleaned_data["shipping_address"].id
+        session_data.save()
 
     def get_success_url(self):
         return reverse("checkout")
 
+    def set_default_addresses_in_kwargs(self, form_kwargs):
+        user_profile = UserProfile.objects.get(user=self.request.user)
+        default_billing_address = user_profile.default_billing_address
+        default_shipping_address = user_profile.default_shipping_address
+        if default_billing_address is not None:
+            form_kwargs["default_billing_address_id"] = default_billing_address.id
+        if default_shipping_address is not None:
+            form_kwargs["default_shipping_address_id"] = default_shipping_address.id
 
-class UserAddressCreateView(CreateView):
+
+class UserAddressCreateView(CartOrderMixin, CreateView):
     # TODO add "use_the_same_address" checkbox for each field if "parent" exist
     # add set as default for billing or shipping address
     model = UserAddress
@@ -113,28 +150,14 @@ class UserAddressCreateView(CreateView):
         # TODO when addres already exist : for user -> use existing, inform that exist
         #                                  for guest -> (check by session id, use existing, dont inform
 
-        # Save new addres as default (in profile) if user want to or add it to session for guest
         self.object = form.save()
         new_address = self.object
-        user = self.request.user
         # TODO exclude outdated type in form
-        address_type = form.cleaned_data["type"]
-        if user.is_authenticated:
-            set_address_as_default = form.cleaned_data["set_address_as_default"]
-            if set_address_as_default:
-                user_profile = UserProfile.objects.get(user=user)
-                if address_type == 'billing':
-                    user_profile.default_billing_address = new_address
-                elif address_type == 'shipping':
-                    user_profile.default_shipping_address = new_address
-                user_profile.save()
+        set_address_as_default = form.cleaned_data.get("set_address_as_default", False)
+        if self.request.user.is_authenticated and set_address_as_default:
+            self.set_user_profile_default_address(new_address)
         else:  # for guests
-            session = self.request.session
-            if address_type == 'billing':
-                session.setdefault('billing_address_ids', []).append(new_address.id)
-            elif address_type == 'shipping':
-                session.setdefault('shipping_address_ids', []).append(new_address.id)
-            session.save()
+            self.add_session_address_ids(address=new_address)
         return super(UserAddressCreateView, self).form_valid(form)
 
     def get_user_checkout(self):
@@ -144,3 +167,12 @@ class UserAddressCreateView(CreateView):
 
     def get_success_url(self):
         return reverse("checkout")
+
+    def set_user_profile_default_address(self, new_address):
+        user_profile = UserProfile.objects.get(user=self.request.user)
+        if new_address.type == 'billing':
+            user_profile.default_billing_address = new_address
+        elif new_address.type == 'shipping':
+            user_profile.default_shipping_address = new_address
+        user_profile.save()
+

@@ -224,9 +224,9 @@ class CheckoutView(CartOrderMixin, FormMixin, DetailView):
         form = self.get_form()
         if form.is_valid():
             email = form.cleaned_data.get("email1")
-            user_checkout, user_checkout_created = UserCheckout.objects.get_or_create(email=email)
-            if user_checkout_created:
-                self.request.session["user_checkout_id"] = user_checkout.id
+            user_checkout = UserCheckout.objects.get_or_create(email=email)[0]
+            # if guest_auth_by_email:
+            self.request.session["user_checkout_id"] = user_checkout.id
             return self.form_valid(form)
         elif user.is_authenticated:
             email = user.email

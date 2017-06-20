@@ -1,5 +1,4 @@
 from django import forms
-from django.forms import ModelForm
 
 from orders.models import UserCheckout, UserAddress
 
@@ -23,15 +22,20 @@ class GuestCheckoutForm(forms.Form):
 
 
 class UserAddressChooseForm(forms.Form):
-    field_order = None
+    field_order = ['billing_address', 'shipping_address', 'use_the_same_address']
+    use_the_same_address = forms.BooleanField(required=False, label="Use the same address for shipping and billing")
+    billing_address = forms.ModelChoiceField(
+        queryset=UserAddress.objects.filter(type="billing"),
+        empty_label=None, required=False)
+    shipping_address = forms.ModelChoiceField(
+        queryset=UserAddress.objects.filter(type="shipping"),
+        empty_label=None, required=False)
 
     def __init__(self, *args, **kwargs):
+        # Set empty labels as default addresses form user_profile
         default_billing_address_id = kwargs.pop("default_billing_address_id", None)
         default_shipping_address_id = kwargs.pop("default_shipping_address_id", None)
         super(UserAddressChooseForm, self).__init__(*args, **kwargs)
-
-        self.fields['use_the_same_for_shipping_as_billing_address'] = forms.BooleanField()
-        self.fields['use_the_same_for_billing_as_shipping_address'] = forms.BooleanField()
         self.set_empty_address_label(field_name='billing_address', address_id=default_billing_address_id)
         self.set_empty_address_label(field_name='shipping_address', address_id=default_shipping_address_id)
 
@@ -40,12 +44,19 @@ class UserAddressChooseForm(forms.Form):
             billing_address = UserAddress.objects.get(id=address_id)
             self.fields[field_name].empty_label = billing_address
 
-    billing_address = forms.ModelChoiceField(
-        queryset=UserAddress.objects.filter(type="billing"),
-        empty_label=None)
-    shipping_address = forms.ModelChoiceField(
-        queryset=UserAddress.objects.filter(type="shipping"),
-        empty_label=None)
+    def clean_use_the_same_address(self):
+        use_the_same_address_checked = self.cleaned_data.get("use_the_same_address")
+        billing_address = self.cleaned_data.get("billing_address")
+        shipping_address = self.cleaned_data.get("shipping_address")
+        print("Cleaned data (check clean): \n %s \n" % self.cleaned_data)
+        if not billing_address and not shipping_address:
+            raise forms.ValidationError("You need to chose billing or shipping address at last.")
+        elif not use_the_same_address_checked:
+            if not billing_address:
+                raise forms.ValidationError("You need to chose billing address or match to use the same as shipping.")
+            elif not shipping_address:
+                raise forms.ValidationError("You need to chose shipping address or match to use the same as billing.")
+        return use_the_same_address_checked
 
 
 class UserAddressModelForm(forms.ModelForm):
@@ -53,7 +64,7 @@ class UserAddressModelForm(forms.ModelForm):
         user_is_auth = kwargs.pop('user_is_auth', None)
         super().__init__(*args, **kwargs)
         if user_is_auth:
-            self.fields['set_address_as_default'] = forms.BooleanField()
+            self.fields['set_address_as_default'] = forms.BooleanField(required=False)
 
     class Meta:
         model = UserAddress

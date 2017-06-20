@@ -13,3 +13,11 @@ class CartOrderMixin(object):
         if cart.items.count() < 1:
             return None
         return cart
+
+    def add_session_address_ids(self, address):
+        session = self.request.session
+        if address.type == 'billing':
+            session.setdefault('billing_address_ids', []).append(address.id)
+        elif address.type == 'shipping':
+            session.setdefault('shipping_address_ids', []).append(address.id)
+        session.save()

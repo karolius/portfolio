@@ -5,7 +5,6 @@ from .models import Product, Category, Variation
 
 
 class ProductModelForm(ModelForm):
-
     class Meta:
         model = Product
         fields = [
