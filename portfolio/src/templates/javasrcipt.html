@@ -16,7 +16,6 @@
             type: "GET",
             url: "{% url 'item_count' %}",
             success: function (data) {
-                console.log("1count: ", data.cart_item_count);
                 if(data.cart_item_count < 1){
                     badge_items_count.hide();
                     badge_sum_price.hide();

@@ -9,10 +9,13 @@
         {% csrf_token %}
         {{ form|crispy }}
         <div class="row ">
+            <div class="col-xs-3">
+                <a href="{% url 'checkout' %}" class="btn btn-block btn-primary">Back to Order</a>
+            </div>
             <div class="col-xs-6">
                 <input type="submit" class="btn btn-block btn-primary" value="Submit">
             </div>
-            <div class="col-xs-6">
+            <div class="col-xs-3">
                 <a href="{% url 'add_address' %}" class="btn btn-block btn-primary">Add Address</a>
             </div>
         </div>

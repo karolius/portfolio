@@ -3,9 +3,9 @@ from django.conf.urls import url, include
 from django.conf.urls.static import static
 from django.contrib import admin
 
-from orders.views import AddressSelectFormView, UserAddressCreateView
-from .views import test
 from carts.views import CartView, ItemCoutView, CheckoutView
+from orders.views import AddressSelectFormView, UserAddressCreateView
+from .views import homeView
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -17,7 +17,7 @@ urlpatterns = [
     url(r'^cart/checkout/address/$', AddressSelectFormView.as_view(), name='order_address'),
     url(r'^cart/checkout/address/add$', UserAddressCreateView.as_view(), name='add_address'),
 
-    url(r'^$', test, name='home'),
+    url(r'^$', homeView, name='home'),
     url(r'^products/', include("products.urls", namespace="products")),
     url(r'^categories/', include("products.urls_categories", namespace="categories")),
 ]

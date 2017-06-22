@@ -31,17 +31,21 @@
                             <span id="cart-count-badge" class="badge">
                             {{ request.session.cart_item_count }}
                         </span>
-                            <i class="fa fa-shopping-basket fa-navbar-basket"></i>
-                            <span id="cart-sum-price-badge" class="badge">
+                        <i class="fa fa-shopping-basket fa-navbar-basket"></i>
+                        <span id="cart-sum-price-badge" class="badge">
                             {{ request.session.cart_sum_price }} €
                         </span>
                     </a>
                 </li>
-
-
                 {% if request.user.is_authenticated %}
+                    {% if request.session.user_name %}
+                        <li><a href="#">Hi {{ request.session.user_name|truncatechars:24 }}</a></li>
+                    {% endif %}
                     <li><a href="{% url 'auth_logout' %}">Logout</a></li>
                 {% else %}
+                    {% if request.session.guest_email %}
+                        <li><a href="#">Hi {{ request.session.guest_email|truncatechars:24 }}</a></li>
+                    {% endif %}
                     <li>
                         <a href="{% url 'registration_register' %}">Register</a>
                     </li>

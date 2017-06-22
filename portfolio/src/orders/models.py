@@ -35,9 +35,7 @@ class UserAddress(models.Model):
     zipcode = models.CharField(max_length=120)
 
     def __str__(self):
-        user = self.user_checkout.user
-        email = self.user_checkout.email
-        return "%s-%s" % (user if user else email, self.street)
+        return "%s-%s-%s" % (self.id, self.street, self.city)
 
 
 class Order(models.Model):  # when order is created, we just need cart, else can come later

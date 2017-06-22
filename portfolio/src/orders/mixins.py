@@ -14,7 +14,7 @@ class CartOrderMixin(object):
             return None
         return cart
 
-    def add_session_address_ids(self, address):
+    def add_address_ids_to_session(self, address):
         session = self.request.session
         if address.type == 'billing':
             session.setdefault('billing_address_ids', []).append(address.id)

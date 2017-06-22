@@ -107,7 +107,17 @@
             {% endif %}
             <input class="form-control" type="number" name="qantity" value="1" title="quantity">
             <br/>
-            <input id="add-to-cart-btn" type="submit" class="btn btn-default" value="Add to Cart">
+            <div class="row">
+                <div class="col-xs-6">
+                    <input id="add-to-cart-btn" type="submit" class="btn btn-block btn-primary" value="Add to Cart">
+                </div>
+                <div class="col-xs-6">
+                    <a href="{% url 'cart' %}" class="btn btn-block btn-primary">
+                        Go to Cart
+                    </a>
+                </div>
+            </div>
+
         </form>
         <p id="description">
             {{ object.variation_set.first.sub_description }}

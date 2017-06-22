@@ -60,7 +60,7 @@
                 <tbody>
                 {% for cartitem in object.cartitem_set.all %}
                     <tr id="cartitem-{{ cartitem.variation.id }}">
-                        <td>{{ cartitem }}</td>
+                        <td><a href="{{ cartitem.variation.get_absolute_url }}">{{ cartitem }}</a></td>
                         <td>{{ cartitem.variation.get_price }}</td>
                         <td>
                             <form method="GET" action=".">
@@ -92,13 +92,17 @@
                     <td id="cartitem-total-price" class="text-right">{{ object.total }}</td>
                 </tr>
                 <tr>
-                    <td colspan="5" align="center">
-                        <a href="{% url 'products:list' %}" class="btn btn-success">
-                            Add more products
-                        </a>
-                        <a href="{% url 'checkout' %}" class="btn btn-success">
-                            Go to checkout
-                        </a>
+                    <td colspan="5" align="center row">
+                        <div class="col-xs-6">
+                            <a href="{% url 'products:list' %}" class="btn btn-block btn-primary">
+                                Add more products
+                            </a>
+                        </div>
+                        <div class="col-xs-6">
+                            <a href="{% url 'checkout' %}" class="btn btn-block btn-primary">
+                                Go to checkout
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 </tbody>

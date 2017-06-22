@@ -270,3 +270,6 @@ class CheckoutView(CartOrderMixin, FormMixin, DetailView):
             order = Order.objects.create(cart=cart)
             self.request.session["order_id"] = order.id
         return order
+
+
+# TODO add close card and flush session data
